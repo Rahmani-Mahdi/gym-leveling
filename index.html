@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gym Leveling – Offline</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#45a29e">
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-body: #080b12;
+      --bg-card: rgba(20, 30, 45, 0.85);
+      --border-glow: rgba(69, 162, 158, 0.25);
+      --accent: #45a29e;
+      --accent-bright: #66fcf1;
+      --text-primary: #e5e9f0;
+      --text-secondary: #a0b3c9;
+      --text-muted: #6a7f9a;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      --radius: 16px;
+      --radius-sm: 8px;
+    }
+    body {
+      background: var(--bg-body);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      background-image: radial-gradient(circle at 20% 20%, rgba(69, 162, 158, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(102, 252, 241, 0.03) 0%, transparent 50%);
+    }
+    #app { max-width: 820px; width: 100%; margin: 0 auto; }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      padding: 20px 0 24px 0;
+      border-bottom: 1px solid var(--border-glow);
+      margin-bottom: 30px;
+    }
+    .header-left h1 {
+      font-size: 1.9rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header-left .subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      -webkit-text-fill-color: var(--text-muted);
+    }
+    .header-right {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .streak-badge {
+      background: rgba(69, 162, 158, 0.15);
+      border: 1px solid var(--accent);
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-bright);
+      white-space: nowrap;
+    }
+    .week-badge {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .toolbar {
+      display: flex;
+      gap: 6px;
+      margin-left: 5px;
+      flex-wrap: wrap;
+    }
+    .btn-icon {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .btn-icon:hover {
+      background: rgba(69, 162, 158, 0.15);
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+    .btn-icon.danger:hover {
+      background: rgba(192, 57, 43, 0.2);
+      border-color: #c0392b;
+      color: #e74c3c;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      transition: border-color 0.3s ease;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-title .badge {
+      background: var(--accent);
+      color: #080b12;
+      font-size: 0.6rem;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 40px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .voice-box {
+      background: rgba(69, 162, 158, 0.05);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      font-style: italic;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      box-shadow: inset 0 0 20px rgba(69, 162, 158, 0.02);
+    }
+    .voice-box strong {
+      color: var(--accent-bright);
+      font-style: normal;
+    }
+
+    .exercise-card {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.02);
+      transition: background 0.2s ease;
+    }
+    .exercise-card:hover {
+      background: rgba(0, 0, 0, 0.35);
+      border-color: rgba(69, 162, 158, 0.1);
+    }
+    .ex-header {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      margin-bottom: 8px;
+    }
+    .ex-number {
+      background: rgba(69, 162, 158, 0.15);
+      color: var(--accent-bright);
+      font-weight: 700;
+      font-size: 0.7rem;
+      padding: 0 10px;
+      border-radius: 40px;
+      line-height: 22px;
+    }
+    .ex-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+    .ex-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 24px;
+      margin-bottom: 8px;
+    }
+    .metric {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .metric strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .metric .highlight {
+      color: var(--accent-bright);
+      font-weight: 700;
+    }
+    .ex-cues {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+    .ex-cues span {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 2px 10px;
+      border-radius: 20px;
+      margin: 2px 4px 2px 0;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 16px;
+      margin-bottom: 4px;
+      letter-spacing: 0.3px;
+    }
+    label:first-of-type { margin-top: 0; }
+    input, select {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border 0.2s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(69, 162, 158, 0.1);
+    }
+    .checkbox-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    .checkbox-grid label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 400;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-top: 0;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 6px 14px 6px 10px;
+      border-radius: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.2s ease;
+    }
+    .checkbox-grid label:hover {
+      background: rgba(69, 162, 158, 0.05);
+      border-color: rgba(69, 162, 158, 0.2);
+    }
+    .checkbox-grid input[type="checkbox"] {
+      width: auto;
+      accent-color: var(--accent);
+      transform: scale(1.1);
+    }
+    .input-group {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .input-group label {
+      margin-top: 0;
+      font-weight: 400;
+      font-size: 0.9rem;
+    }
+    .input-group input {
+      width: auto;
+      max-width: 100px;
+      padding: 8px 12px;
+    }
+
+    .rating-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 6px 0;
+    }
+    .rating-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 40px;
+      padding: 10px 18px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex: 1 0 auto;
+      min-width: 80px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .rating-btn:hover {
+      background: rgba(69, 162, 158, 0.1);
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+    .rating-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #080b12;
+      box-shadow: 0 0 20px rgba(69, 162, 158, 0.25);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 14px 28px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #080b12;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(69, 162, 158, 0.2);
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(69, 162, 158, 0.3);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-sm);
+      padding: 14px 28px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .done-state {
+      text-align: center;
+      padding: 30px 10px;
+    }
+    .done-state .big-icon { font-size: 4rem; margin-bottom: 10px; }
+    .done-state h2 { font-size: 1.5rem; margin-bottom: 6px; }
+    .done-state p { color: var(--text-secondary); }
+
+    @media (max-width: 640px) {
+      .header { flex-direction: column; align-items: flex-start; }
+      .header-right { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+      .card { padding: 18px 16px; }
+      .rating-btn { flex: 1 1 45%; }
+      .ex-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>// ============================================================
+// 1.  exerciseLibrary.js
+// ============================================================
+const exerciseLibrary = {
+  
+  // SQUAT
+  bw_squat: { id:"bw_squat", name:"Bodyweight Squat", movement_pattern:"squat", equipment_required:[], difficulty:1, class_affinity:["warrior","tank","assassin","mage","ranger"], muscles_primary:["quadriceps","glutes"], muscles_secondary:["hamstrings","core"], sets_default:3, reps_min:15, reps_max:20, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-0-2-0", tempo_note:"Lower for 2 seconds, stand back up smoothly", regression_id:null, progression_id:"goblet_squat", cues:["[beginner] Feet about shoulder-width apart, toes pointing slightly outward","[beginner] Keep your chest up like there's a string pulling the top of your head to the ceiling","[beginner] Push your knees outward as you lower — don't let them cave inward","[intermediate] Brace your core before descending","[intermediate] Drive knees out actively throughout the movement","[intermediate] Hit parallel or below — thighs at least level with the floor","[advanced] Focus on controlled eccentric and full hip crease below knee","[advanced] Use as a warm-up or active recovery movement only"], common_mistakes:["Heels rising off the floor","Knees caving inward","Not reaching parallel depth"], tutorial_url:"https://www.youtube.com/watch?v=aclHkVaku9U", notes:"Entry point for all classes. No equipment needed." },
+  goblet_squat: { id:"goblet_squat", name:"Goblet Squat (Dumbbell)", movement_pattern:"squat", equipment_required:["dumbbells"], difficulty:2, class_affinity:["warrior","tank","assassin"], muscles_primary:["quadriceps","glutes"], muscles_secondary:["hamstrings","core","upper back"], sets_default:3, reps_min:12, reps_max:15, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower for 3 seconds, pause briefly at the bottom, stand back up", regression_id:"bw_squat", progression_id:"bulgarian_split_squat_bw", cues:["[beginner] Hold the dumbbell with both hands at chest height, close to your body","[beginner] At the bottom, your elbows should point down between your knees","[beginner] Don't let the dumbbell pull you forward — keep it tight to your chest","[intermediate] Use the goblet position to actively push your elbows against your inner knees","[intermediate] Maintain an upright torso throughout — this is the main purpose of this variation","[intermediate] Pause at the bottom to reinforce depth","[advanced] Use as a warm-up tool or with tempo manipulation","[advanced] Bottom pause with diaphragmatic breathing makes this harder than it looks"], common_mistakes:["Dumbbell drifting away from chest","Elbows flaring outward instead of tracking inside knees","Rising onto toes at the bottom"], tutorial_url:"https://www.youtube.com/watch?v=MeIiIdhvXT4", notes:"The goblet position naturally teaches upright torso and good depth" },
+  bulgarian_split_squat_bw: { id:"bulgarian_split_squat_bw", name:"Bulgarian Split Squat (Bodyweight)", movement_pattern:"squat", equipment_required:["chair"], difficulty:3, class_affinity:["warrior","tank","assassin","ranger"], muscles_primary:["quadriceps","glutes"], muscles_secondary:["hamstrings","hip flexors","core"], sets_default:4, reps_min:10, reps_max:12, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower slowly for 3 seconds, push back up. Focus on balance first", regression_id:"goblet_squat", progression_id:"bulgarian_split_squat_weighted", cues:["[beginner] Rest the top of your back foot on the chair — laces facing down","[beginner] Your front foot should be far enough forward that your front knee doesn't go way past your toes","[beginner] Lower straight down toward the floor, don't lean forward","[intermediate] Front shin should stay close to vertical at the bottom","[intermediate] Keep hips square — don't let the back hip rotate open","[intermediate] Drive through the heel of the front foot to stand","[advanced] Control hip alignment — posterior pelvic tilt at the bottom kills glute engagement","[advanced] Use as a primary strength movement even with light load due to unilateral demand"], common_mistakes:["Front foot too close to the chair causing excessive forward knee travel","Torso leaning too far forward","Rushing the descent and losing balance"], tutorial_url:"https://www.youtube.com/watch?v=2C-uNgKwPLE", notes:"Single leg work effectively doubles the load on the working leg despite light equipment" },
+  bulgarian_split_squat_weighted: { id:"bulgarian_split_squat_weighted", name:"Bulgarian Split Squat (Weighted)", movement_pattern:"squat", equipment_required:["chair","dumbbells"], difficulty:4, class_affinity:["warrior","tank"], muscles_primary:["quadriceps","glutes"], muscles_secondary:["hamstrings","hip flexors","core"], sets_default:4, reps_min:8, reps_max:10, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower for 3 seconds, stand back up", regression_id:"bulgarian_split_squat_bw", progression_id:"bulgarian_split_squat_deficit", cues:["[beginner] Hold one dumbbell in each hand hanging at your sides","[beginner] Don't let the weight pull your shoulders forward — stand tall","[beginner] If balance feels unstable, lighten the load and nail the bodyweight version first","[intermediate] Added load makes it easier to rush — actively slow the descent","[intermediate] Squeeze glutes at the top to fully extend the hip","[intermediate] Keep dumbbells still — swinging them is a sign the weight is too heavy","[advanced] Treat the eccentric as the primary stimulus — the load is light so time under tension is your lever","[advanced] Pair with a 2-sec bottom pause for maximum quad and glute activation"], common_mistakes:["Gripping dumbbells too tightly and creating unnecessary tension in shoulders","Leaning into the dumbbells instead of staying upright","Shortening range of motion as fatigue builds"], tutorial_url:"https://www.youtube.com/watch?v=2C-uNgKwPLE", notes:"Same movement as BW version — cue the effect of added load on posture and tempo" },
+  bulgarian_split_squat_deficit: { id:"bulgarian_split_squat_deficit", name:"Bulgarian Split Squat (Deficit)", movement_pattern:"squat", equipment_required:["chair","dumbbells"], difficulty:5, class_affinity:["warrior","tank"], muscles_primary:["quadriceps","glutes"], muscles_secondary:["hamstrings","hip flexors","core"], sets_default:4, reps_min:6, reps_max:8, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"3-1-2-0", tempo_note:"Lower for 3 seconds, pause 1 second, drive up for 2 seconds", regression_id:"bulgarian_split_squat_weighted", progression_id:null, cues:["[beginner] This variation is not for beginners — master the weighted version first","[intermediate] Elevate your front foot on a book or stable platform (5–10 cm is enough)","[intermediate] The increased range of motion will expose hip flexor tightness — don't force depth","[intermediate] Go slower than you think you need to","[advanced] Full hip flexor stretch at the bottom before initiating the drive up","[advanced] This is your progressive overload ceiling — volume, tempo, and pauses are your tools now","[advanced] Consider adding a backpack for load if deficit + dumbbells feels too easy"], common_mistakes:["Elevating the front foot too high before mobility allows it","Using an unstable platform that shifts under load","Cutting depth to avoid the stretch at the bottom"], tutorial_url:"https://www.youtube.com/watch?v=2C-uNgKwPLE", notes:"Ceiling of squat progression with available equipment" },
+  // SQUAT — GYM
+  leg_press: { id:"leg_press", name:"Leg Press", movement_pattern:"squat", equipment_required:["cable_machine"], difficulty:2, class_affinity:["warrior","tank","assassin","ranger"], muscles_primary:["quadriceps","glutes"], muscles_secondary:["hamstrings","core"], sets_default:3, reps_min:12, reps_max:15, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower the platform slowly for 3 seconds, push back up without locking the knees out completely at the top", regression_id:"bw_squat", progression_id:"barbell_back_squat", cues:["[beginner] Feet about shoulder-width apart on the platform, toes slightly outward","[beginner] Lower the platform until your knees reach roughly 90 degrees — don't let your lower back peel off the seat","[beginner] Push evenly through the whole foot — don't just drive through your toes","[intermediate] Foot position matters — higher foot placement emphasizes glutes and hamstrings, lower placement emphasizes quads","[intermediate] Don't lock out the knees at the top — keep tension on the muscle throughout","[intermediate] Controlled eccentric is where the growth stimulus is — don't just drop the weight","[advanced] A great tool for volume work after barbell squats — pre-fatigued quads respond well to leg press","[advanced] Single-leg leg press is a legitimate unilateral option if Bulgarian split squats are unavailable","[advanced] Foot position experimentation reveals your individual muscle activation pattern — there is no single correct placement"], common_mistakes:["Lower back peeling off the seat at the bottom — reduce range of motion until flexibility improves","Knees caving inward during the push — same cue as squats: drive knees out","Feet too low and range of motion too deep causing lower back rounding"], tutorial_url:"https://www.youtube.com/watch?v=IZxyjW7MPJQ", notes:"Good entry point for squat pattern when barbell technique isn't ready yet." },
+  barbell_back_squat: { id:"barbell_back_squat", name:"Barbell Back Squat", movement_pattern:"squat", equipment_required:["barbell"], difficulty:3, class_affinity:["warrior","tank","assassin"], muscles_primary:["quadriceps","glutes"], muscles_secondary:["hamstrings","core","upper back","erector spinae"], sets_default:4, reps_min:5, reps_max:8, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower for 3 seconds under control, drive up with intent — the bar should move fast on the way up even if it doesn't", regression_id:"leg_press", progression_id:"barbell_front_squat", cues:["[beginner] Bar sits on the shelf of muscle across your upper back — not on your neck","[beginner] Feet slightly wider than hip-width, toes out 15–30 degrees","[beginner] Break at the hips and knees simultaneously, sit into the squat — don't just push your knees forward","[intermediate] Brace hard before you unrack — 360 degrees of tension in the core, not just sucking in your belly","[intermediate] Drive knees out actively the entire descent — they follow the toes","[intermediate] Hit depth — hip crease below the top of the knee is the standard","[advanced] The bar path should be vertical when viewed from the side — any forward drift means something is breaking down","[advanced] Compensatory acceleration on the concentric — intend to move the bar fast even under heavy load","[advanced] High bar vs low bar changes the mechanics significantly — know which you're doing and why"], common_mistakes:["Bar too high on the neck instead of sitting on the upper back shelf","Knees caving on the way up, especially under heavy load","Morning the rep — hips shoot up before the chest, turning it into a good morning"], tutorial_url:"https://www.youtube.com/watch?v=bEv6CCg2BC8", notes:"The foundational loaded squat." },
+  barbell_front_squat: { id:"barbell_front_squat", name:"Barbell Front Squat", movement_pattern:"squat", equipment_required:["barbell"], difficulty:4, class_affinity:["warrior","tank"], muscles_primary:["quadriceps","glutes"], muscles_secondary:["core","upper back","thoracic extensors"], sets_default:4, reps_min:4, reps_max:6, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower for 3 seconds — the front rack position forces an upright torso, which makes depth easier but upper back strength a limiting factor", regression_id:"barbell_back_squat", progression_id:null, cues:["[beginner] Bar rests on the front of the shoulders — fingertips just under the bar, elbows high","[beginner] The high elbow position is non-negotiable — if your elbows drop, the bar rolls forward","[beginner] Cross-arm grip is an alternative if wrist mobility prevents the standard front rack","[intermediate] The front rack automatically forces an upright torso — use this to your advantage for quad emphasis","[intermediate] Upper back must stay rigid — thoracic rounding forward causes the bar to fall","[intermediate] Depth is typically easier with front squat than back squat — use it","[advanced] Front squat is the primary Olympic weightlifting squat — if you're not pursuing that, it's still superior for pure quad development","[advanced] Elbows must stay high throughout — any drop is a form break, not a style choice","[advanced] The limiting factor is usually front rack mobility and upper back strength, not leg strength — address both directly"], common_mistakes:["Elbows dropping and bar rolling forward — immediately dangerous under load","Using cross-arm grip as a permanent solution instead of addressing wrist mobility","Torso caving forward on heavy reps — the front squat is less forgiving than back squat"], tutorial_url:"https://www.youtube.com/watch?v=uYumuL_G_V0", notes:"More quad-dominant and technically demanding than back squat." },
+  hack_squat_machine: { id:"hack_squat_machine", name:"Hack Squat (Machine)", movement_pattern:"squat", equipment_required:["cable_machine"], difficulty:3, class_affinity:["warrior","tank","assassin"], muscles_primary:["quadriceps"], muscles_secondary:["glutes","hamstrings","core"], sets_default:3, reps_min:10, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower slowly for 3 seconds — the machine guides the path so the limiting factor is muscle endurance not balance", regression_id:"barbell_back_squat", progression_id:null, cues:["[beginner] Shoulders and back flat against the pad, feet at hip-width on the platform","[beginner] Lower until thighs reach parallel or slightly below","[beginner] Push through the whole foot — not just the toes","[intermediate] Foot position lower on the platform increases quad emphasis","[intermediate] The fixed path means this is safer under heavy load than free barbell work — use it for volume accumulation","[intermediate] Controlled eccentric is essential — the machine makes it tempting to drop the weight","[advanced] Excellent tool for high-rep quad work after primary barbell squats","[advanced] Pause reps at the bottom are extremely effective here — quads under stretch","[advanced] Single-leg version is available on most hack squat machines and is a serious unilateral option"], common_mistakes:["Heels rising off the platform","Knees caving inward on the push","Cutting range of motion short as weight increases"], tutorial_url:"https://www.youtube.com/watch?v=0tn5K9NlCfo", notes:"Machine path makes this a good hypertrophy tool." },
+  // HINGE
+  hip_hinge_wall: { id:"hip_hinge_wall", name:"Hip Hinge (Wall Drill)", movement_pattern:"hinge", equipment_required:[], difficulty:1, class_affinity:["warrior","tank","assassin","mage","ranger"], muscles_primary:["glutes","hamstrings"], muscles_secondary:["lower back","core"], sets_default:3, reps_min:10, reps_max:10, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-2-0", tempo_note:"Push hips back slowly until you feel a stretch in the back of your legs, then squeeze your glutes and stand back up", regression_id:null, progression_id:"rdl_bilateral", cues:["[beginner] Stand about 15 cm from a wall, feet hip-width apart","[beginner] Push your hips backward until they touch the wall","[beginner] Keep your back flat — imagine balancing a broomstick along your spine","[intermediate] Soft bend in the knees — this is not a squat, knees stay mostly straight","[intermediate] Feel the stretch in your hamstrings as hips push back, not in your lower back","[intermediate] Squeeze glutes hard to drive hips forward on the way up","[advanced] Use this to reinforce the hip hinge pattern before heavy work","[advanced] Focus on hamstring tension at end range — this is the position you want to own under load"], common_mistakes:["Bending the knees too much and turning it into a squat","Rounding the lower back instead of hinging at the hip","Not pushing hips far enough back to feel hamstring tension"], tutorial_url:"https://www.youtube.com/watch?v=YCGOhAqkCgs", notes:"Non-negotiable starting point." },
+  rdl_bilateral: { id:"rdl_bilateral", name:"Romanian Deadlift — Bilateral (Dumbbells)", movement_pattern:"hinge", equipment_required:["dumbbells"], difficulty:2, class_affinity:["warrior","tank","ranger"], muscles_primary:["hamstrings","glutes"], muscles_secondary:["lower back","core","grip"], sets_default:3, reps_min:10, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower the dumbbells slowly for 3 seconds until you feel a strong stretch behind your legs, then stand back up by squeezing your glutes", regression_id:"hip_hinge_wall", progression_id:"rdl_single_leg", cues:["[beginner] Hold one dumbbell in each hand in front of your thighs","[beginner] Push your hips back as you lower — the dumbbells just travel down your legs","[beginner] Stop when you feel a strong stretch in your hamstrings, not when the weights reach the floor","[intermediate] Maintain a neutral spine throughout — no rounding at the lower back","[intermediate] Think about pushing the floor away rather than pulling yourself up","[intermediate] Keep dumbbells close to your legs the entire movement","[advanced] The limiting factor with light dumbbells is hamstring tension not load — use slow eccentrics and pauses","[advanced] Drive hips forward explosively on the concentric while keeping the eccentric controlled","[advanced] Experiment with shoulder-width vs. hip-width stance to find your best hamstring activation position"], common_mistakes:["Rounding the lower back at the bottom","Bending the knees too much and turning it into a squat","Letting the dumbbells drift forward away from the legs"], tutorial_url:"https://www.youtube.com/watch?v=1uDiW5--rAE", notes:"The foundational loaded hinge." },
+  rdl_single_leg: { id:"rdl_single_leg", name:"Single-Leg RDL (Contralateral Load)", movement_pattern:"hinge", equipment_required:["dumbbells"], difficulty:3, class_affinity:["warrior","assassin","ranger"], muscles_primary:["hamstrings","glutes"], muscles_secondary:["lower back","core","hip stabilizers"], sets_default:3, reps_min:8, reps_max:10, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"3-1-2-0", tempo_note:"Lower slowly for 3 seconds while keeping your balance — go only as far as you can without wobbling, then stand back up", regression_id:"rdl_bilateral", progression_id:"sliding_leg_curl", cues:["[beginner] Hold one dumbbell in the opposite hand of your standing leg","[beginner] Hinge forward slowly, letting the free leg float back behind you for balance","[beginner] Only go as low as you can while keeping your back flat — depth comes with practice","[intermediate] Contralateral load means the dumbbell is in the opposite hand to the standing leg — this creates anti-rotation demand","[intermediate] Keep hips square to the floor — the free leg wants to rotate open","[intermediate] Feel the glute of the standing leg working hard to control the descent","[advanced] Hip square alignment is everything — use a mirror or film yourself to check","[advanced] The anti-rotation demand makes this harder than it looks even with light load","[advanced] Pause at the bottom with full hip extension of the free leg for maximum glute activation"], common_mistakes:["Hips rotating open as you lower","Bending the standing knee excessively and turning it into a single-leg squat","Rushing through reps to avoid the balance challenge"], tutorial_url:"https://www.youtube.com/watch?v=ZOoRVIRFbgY", notes:"The anti-rotation demand makes this disproportionately difficult relative to the load." },
+  sliding_leg_curl: { id:"sliding_leg_curl", name:"Sliding Leg Curl", movement_pattern:"hinge", equipment_required:[], difficulty:4, class_affinity:["warrior","tank","assassin"], muscles_primary:["hamstrings"], muscles_secondary:["glutes","core"], sets_default:3, reps_min:10, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-4-0", tempo_note:"Slide your heels out slowly for 4 seconds, then bend your knees to slide back in. Use your hands on the floor lightly for balance if needed", regression_id:"rdl_single_leg", progression_id:"sliding_leg_curl_single", cues:["[beginner] Lie on your back, heels on a smooth floor with socks on (or on a towel)","[beginner] Push your hips up into a bridge position first","[beginner] Slowly slide both heels away from you, then pull them back in","[intermediate] Keep hips elevated throughout — don't let them sag as legs extend","[intermediate] The eccentric (sliding out) is where the hamstring work happens — control it","[intermediate] Squeeze hamstrings actively to pull heels back in","[advanced] Bilateral version should feel easy before attempting single-leg","[advanced] At the fully extended position your hamstrings are at maximum length under load — this is where most people rush","[advanced] Pair with RDL in the same session for full hamstring length spectrum training"], common_mistakes:["Hips dropping as legs slide out","Rushing the eccentric to avoid the difficulty","Feet sliding sideways instead of straight back"], tutorial_url:"https://www.youtube.com/watch?v=4K9HqBMwgTw", notes:"No equipment needed beyond socks and a smooth floor." },
+  sliding_leg_curl_single: { id:"sliding_leg_curl_single", name:"Sliding Leg Curl — Single Leg", movement_pattern:"hinge", equipment_required:[], difficulty:5, class_affinity:["warrior","assassin"], muscles_primary:["hamstrings"], muscles_secondary:["glutes","core"], sets_default:3, reps_min:6, reps_max:8, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"2-1-4-0", tempo_note:"Slow eccentric for 4 seconds, then pull back in. The load on one hamstring doubles.", regression_id:"sliding_leg_curl", progression_id:null, cues:["[beginner] Master the bilateral version first — this is significantly harder","[intermediate] One leg extended in the air, working leg slides out alone","[intermediate] Keep hips square and elevated — the non-working leg will want to compensate","[intermediate] If you can't control the slide out, regress to bilateral","[advanced] This is Nordic curl territory in terms of hamstring demand","[advanced] Slow eccentrics here are a genuine injury-prevention tool — hamstring strength at long muscle lengths reduces strain risk significantly","[advanced] Can be programmed as 3–5 reps with maximum eccentric control rather than chasing higher reps"], common_mistakes:["Hips rotating toward the working side","Using the non-working leg to assist the movement","Not achieving full extension before pulling back in"], tutorial_url:"https://www.youtube.com/watch?v=4K9HqBMwgTw", notes:"Ceiling of hinge progression with no equipment." },
+  dumbbell_swing: { id:"dumbbell_swing", name:"Dumbbell Swing", movement_pattern:"hinge", equipment_required:["dumbbells"], difficulty:3, class_affinity:["warrior","assassin","ranger"], muscles_primary:["glutes","hamstrings"], muscles_secondary:["core","shoulders","grip"], sets_default:5, reps_min:15, reps_max:20, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:null, tempo_note:"This is an explosive movement — there's no slow tempo. Focus on the hip snap, not swinging with your arms", regression_id:"hip_hinge_wall", progression_id:null, cues:["[beginner] Hold one dumbbell with both hands by the head of the weight","[beginner] Hinge at the hips and let the dumbbell swing back between your legs","[beginner] Snap your hips forward explosively — the dumbbell swings up from hip power, not arm strength","[intermediate] The hinge back should load the hamstrings like a spring","[intermediate] At the top, squeeze glutes hard and stand tall — don't hyperextend the lower back","[intermediate] Keep arms relaxed — tense arms bleed power from the hip drive","[advanced] With light dumbbells, volume and intent are the stimulus — 5×20 with max power per rep","[advanced] Think of it as a horizontal jump where your feet stay on the ground","[advanced] Can be used as a power finisher or as active warm-up for the hinge pattern"], common_mistakes:["Squatting down instead of hinging back","Using arms to pull the dumbbell up rather than hip drive","Hyperextending the lower back at the top of the swing"], tutorial_url:"https://www.youtube.com/watch?v=YSxHifyI6s8", notes:"With 5 kg this is a power and conditioning tool." },
+  // HINGE — GYM
+  barbell_rdl: { id:"barbell_rdl", name:"Barbell Romanian Deadlift", movement_pattern:"hinge", equipment_required:["barbell"], difficulty:3, class_affinity:["warrior","tank","ranger"], muscles_primary:["hamstrings","glutes"], muscles_secondary:["lower back","core","grip"], sets_default:4, reps_min:8, reps_max:10, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower the bar slowly for 3 seconds — it should travel down your legs like a shave. Stand back up by squeezing your glutes, not by pulling with your lower back", regression_id:"rdl_bilateral", progression_id:"conventional_deadlift", cues:["[beginner] Hold the bar with a double-overhand grip just outside hip-width","[beginner] Push your hips back as the bar travels down — it should graze your thighs the whole way","[beginner] Stop when you feel a strong hamstring stretch — for most people that's just below the knee","[intermediate] The bar path should be vertical and close to the body — any forward drift loads the lower back","[intermediate] Neutral spine throughout — not hyperextended, not rounded","[intermediate] Drive hips through at the top — squeeze glutes hard at lockout","[advanced] Grip will limit you before hamstrings do — mixed grip or straps are legitimate tools once form is solid","[advanced] The barbell allows far more load than dumbbells — this is where hamstring and glute development becomes serious","[advanced] Romanian vs conventional distinction: RDL starts from standing, goes to hamstring stretch, never touches the floor between reps"], common_mistakes:["Bar drifting away from the legs — dramatically increases lower back shear force","Rounding the lower back at the bottom instead of hinging","Treating it like a deadlift and going all the way to the floor — that's a different exercise"], tutorial_url:"https://www.youtube.com/watch?v=JCXUYuzwNrM", notes:"The primary loaded hamstring exercise once dumbbells become insufficient." },
+  conventional_deadlift: { id:"conventional_deadlift", name:"Conventional Deadlift", movement_pattern:"hinge", equipment_required:["barbell"], difficulty:3, class_affinity:["warrior","tank"], muscles_primary:["hamstrings","glutes","erector spinae"], muscles_secondary:["trapezius","quadriceps","core","grip","latissimus dorsi"], sets_default:4, reps_min:3, reps_max:5, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:null, tempo_note:"There's no slow eccentric in a competition deadlift — but for training, lower the bar under control in 2–3 seconds. The concentric should be as fast as possible", regression_id:"barbell_rdl", progression_id:null, cues:["[beginner] Bar over mid-foot, hip-width stance, hands just outside the knees","[beginner] Hinge down to the bar — don't squat to it. Shoulders slightly in front of the bar","[beginner] Push the floor away rather than thinking about pulling the bar up","[intermediate] Lat engagement before you pull — think about bending the bar or protecting your armpits","[intermediate] The hips and shoulders should rise at the same rate — if the hips shoot up first it becomes a back-dominant movement","[intermediate] Full lockout at the top — hips through, glutes squeezed, standing completely upright","[advanced] Brace the core like you're about to take a punch — intraabdominal pressure protects the spine under heavy load","[advanced] The bar should drag up your shins and thighs — if it swings away from you the mechanics are wrong","[advanced] Submaximal speed work — pulling 60–70% as fast as possible builds rate of force development"], common_mistakes:["Bar too far from the body — the most common and dangerous error","Hips too low turning it into a squat-deadlift hybrid with poor mechanics for both","Jerking the bar off the floor — the slack must be taken out of the bar before initiating the pull"], tutorial_url:"https://www.youtube.com/watch?v=op9kVnSso6Q", notes:"One of the most important human movements. Learn it properly." },
+  trap_bar_deadlift: { id:"trap_bar_deadlift", name:"Trap Bar Deadlift", movement_pattern:"hinge", equipment_required:["barbell"], difficulty:2, class_affinity:["warrior","tank","assassin","ranger"], muscles_primary:["hamstrings","glutes","quadriceps"], muscles_secondary:["erector spinae","trapezius","core","grip"], sets_default:4, reps_min:5, reps_max:8, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-1-0", tempo_note:"Lower under control, drive up with intent — the neutral grip and upright torso make this more forgiving than a straight bar", regression_id:"barbell_rdl", progression_id:"conventional_deadlift", cues:["[beginner] Step inside the trap bar, feet hip-width apart, handles at your sides","[beginner] Hinge down and grip the handles — shoulders back, chest up","[beginner] Push the floor away and stand up — this feels more intuitive than a straight bar deadlift","[intermediate] The trap bar allows a more upright torso than conventional deadlift — this shifts more load to the quads","[intermediate] High handles vs low handles: high handles reduce range of motion and are easier — start there","[intermediate] Full hip extension and glute squeeze at lockout","[advanced] The trap bar deadlift is arguably the best single exercise available in a gym — combines squat and hinge, lower back friendly, easy to load heavy","[advanced] Transition to conventional deadlift once trap bar mechanics are solid — the hip hinge pattern transfers directly","[advanced] Velocity-based training works well here — track bar speed to ensure each set is submaximal"], common_mistakes:["Torso falling too far forward — the bar wants to swing forward if you don't stay centered","Not using full range of motion when low handles are available","Rushing the setup and not engaging lats before the pull"], tutorial_url:"https://www.youtube.com/watch?v=sABMmE1ue_0", notes:"Lower skill floor than conventional deadlift. Start here if new to deadlifting." },
+  good_morning: { id:"good_morning", name:"Good Morning", movement_pattern:"hinge", equipment_required:["barbell"], difficulty:4, class_affinity:["warrior","tank"], muscles_primary:["hamstrings","erector spinae","glutes"], muscles_secondary:["core","upper back"], sets_default:3, reps_min:8, reps_max:10, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-2-0", tempo_note:"Hinge forward slowly for 3 seconds — bar stays on the back, chest goes toward the floor. Drive back up by squeezing the glutes and hamstrings", regression_id:"barbell_rdl", progression_id:null, cues:["[beginner] Light bar on the upper back — same position as back squat","[beginner] Soft bend in the knees, then hinge forward at the hips until your torso is roughly parallel to the floor","[beginner] Keep your lower back neutral throughout — this is not a rounding exercise","[intermediate] Feel the hamstring stretch at the bottom — identical to an RDL but with the bar on your back instead of in your hands","[intermediate] The erector spinae work isometrically to maintain spinal position — this is the primary benefit over RDL","[intermediate] Start extremely light — the lever arm with a bar on your back is much longer than it looks","[advanced] This is a posterior chain developer and spinal erector strengthener simultaneously","[advanced] Heavy good mornings are for experienced lifters only — the injury risk with improper form is high","[advanced] Pair with RDL in the same session for complete posterior chain coverage from different angles"], common_mistakes:["Too much weight — the good morning looks deceptively simple but the lever arm is brutal","Rounding the lower back under load — severe injury risk","Knees bending too much and turning it into a squat"], tutorial_url:"https://www.youtube.com/watch?v=YA-h3n9L4YU", notes:"Underused posterior chain exercise. Start with an empty bar." },
+
+  // PULL
+  scapular_pullup: { id:"scapular_pullup", name:"Scapular Pull-up", movement_pattern:"pull", equipment_required:["pull_up_bar"], difficulty:1, class_affinity:["warrior","assassin","mage","ranger","tank"], muscles_primary:["lower trapezius","serratus anterior"], muscles_secondary:["rhomboids","rear deltoid"], sets_default:3, reps_min:10, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-2-2-0", tempo_note:"Hang from the bar with straight arms, then squeeze your shoulder blades down and together without bending your elbows — hold for 2 seconds, then relax", regression_id:null, progression_id:"dead_hang", cues:["[beginner] Hang from the bar with arms fully straight","[beginner] Without bending your elbows, pull your shoulder blades down toward your back pockets","[beginner] You'll rise slightly — that's correct. Hold that position briefly then relax back down","[intermediate] Think 'shoulders away from ears' as you initiate the movement","[intermediate] This trains the scapular depressors — the muscles that should fire before your arms pull","[intermediate] If you skip this pattern, your upper traps will dominate every pull and cause shoulder impingement over time","[advanced] Non-negotiable warm-up before any pull session","[advanced] Focus on the mind-muscle connection to lower traps — this is often neurologically underdeveloped even in strong people","[advanced] Pair with band pull-aparts if available for complete scapular health"], common_mistakes:["Bending the elbows and turning it into a partial pull-up","Shrugging the shoulders up instead of pulling them down","Rushing through reps without feeling the scapular movement"], tutorial_url:"https://www.youtube.com/watch?v=FgYoc4O-cio", notes:"Prerequisite movement." },
+  dead_hang: { id:"dead_hang", name:"Dead Hang", movement_pattern:"pull", equipment_required:["pull_up_bar"], difficulty:1, class_affinity:["warrior","assassin","tank","ranger","mage"], muscles_primary:["grip","forearms","latissimus dorsi"], muscles_secondary:["shoulder stabilizers","thoracic spine decompression"], sets_default:3, reps_min:null, reps_max:null, rep_mode:"timed", is_unilateral:false, duration_seconds:30, tempo_code:null, tempo_note:"Just hang. Breathe slowly. Stop before your grip completely fails — leaving 5 seconds in reserve protects your tendons", regression_id:"scapular_pullup", progression_id:"negative_pullup", cues:["[beginner] Grab the bar with both hands slightly wider than shoulder-width","[beginner] Let your body hang fully — don't tense up or shrug your shoulders","[beginner] Breathe normally and just hold on as long as comfortable","[intermediate] Actively pull shoulders down away from ears while hanging — don't just passively dangle","[intermediate] This decompresses the spine and builds shoulder capsule health simultaneously","[intermediate] Stop 5 seconds before grip failure every set — tendons adapt slower than muscles","[advanced] Active hang — scapulae depressed, core lightly braced, feet slightly in front","[advanced] Use as spinal decompression after any heavy lower back session","[advanced] Progress toward one-arm assisted hang when two-arm feels easy"], common_mistakes:["Shrugging shoulders up toward ears during the hang","Hanging to complete grip failure — tendon overuse risk","Holding breath instead of breathing through the hang"], tutorial_url:"https://www.youtube.com/watch?v=F-xEL0Zt9Oo", notes:"Grip strength is a strong longevity predictor." },
+  negative_pullup: { id:"negative_pullup", name:"Negative Pull-up", movement_pattern:"pull", equipment_required:["pull_up_bar"], difficulty:2, class_affinity:["warrior","assassin","tank","ranger"], muscles_primary:["latissimus dorsi","biceps","rear deltoid"], muscles_secondary:["rhomboids","core","grip"], sets_default:4, reps_min:4, reps_max:6, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"5-0-0-0", tempo_note:"Jump or step to the top position with your chin above the bar, then lower yourself as slowly as you can — aim for at least 5 seconds on the way down", regression_id:"dead_hang", progression_id:"pullup_strict", cues:["[beginner] Use a chair or jump to get your chin above the bar to start","[beginner] From the top, lower yourself as slowly as possible — this builds the same muscles as a pull-up","[beginner] When you can no longer control the descent, you're done for that set","[intermediate] Keep elbows tracking slightly forward and out — not flaring wide","[intermediate] Engage your lats by thinking about pulling your elbows toward your back pockets as you lower","[intermediate] Full extension at the bottom — don't cut the range of motion short","[advanced] A controlled 8–10 sec negative means you have the strength for a full pull-up — test it","[advanced] Film yourself from the side to check elbow path and body swing","[advanced] Weighted negatives are an option but unnecessary until strict pull-ups are solid"], common_mistakes:["Dropping too fast and missing the training stimulus","Not reaching full arm extension at the bottom","Swinging the body to generate momentum"], tutorial_url:"https://www.youtube.com/watch?v=N-OUCVmZQaQ", notes:"Most efficient way to build toward first pull-up." },
+  pullup_strict: { id:"pullup_strict", name:"Pull-up — Strict", movement_pattern:"pull", equipment_required:["pull_up_bar"], difficulty:3, class_affinity:["warrior","assassin","tank","ranger"], muscles_primary:["latissimus dorsi","biceps","rear deltoid"], muscles_secondary:["rhomboids","core","grip","lower trapezius"], sets_default:4, reps_min:5, reps_max:8, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Pull up until your chin clears the bar, lower yourself fully with control — no swinging or kipping", regression_id:"negative_pullup", progression_id:"chinup", cues:["[beginner] Grip slightly wider than shoulders, palms facing away","[beginner] Pull until chin clears the bar — chest approaching the bar is even better","[beginner] Lower all the way down to full arm extension every rep","[intermediate] Initiate with scapular depression before the arms pull — the lat should engage first","[intermediate] Think about pulling your elbows toward your hips, not just pulling your hands down","[intermediate] No kipping — momentum is the enemy of strength here","[advanced] Chest-to-bar is the standard — chin over bar is the minimum","[advanced] Full dead hang between reps for maximum range of motion","[advanced] Hollow body position — ribs down, slight posterior pelvic tilt — protects the lower back"], common_mistakes:["Kipping or swinging to generate momentum","Not reaching full extension at the bottom","Chin barely clearing the bar and calling it a rep"], tutorial_url:"https://www.youtube.com/watch?v=eGo4IYlbE5g", notes:"The single best upper body pulling exercise." },
+  chinup: { id:"chinup", name:"Chin-up", movement_pattern:"pull", equipment_required:["pull_up_bar"], difficulty:3, class_affinity:["warrior","assassin","tank","ranger"], muscles_primary:["latissimus dorsi","biceps"], muscles_secondary:["rhomboids","rear deltoid","core"], sets_default:3, reps_min:8, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-2-1", tempo_note:"Palms face toward you — this feels easier for most people and is a good bridge between negatives and pull-ups", regression_id:"negative_pullup", progression_id:"pullup_weighted", cues:["[beginner] Palms face toward you, hands shoulder-width or slightly narrower","[beginner] Pull until chin clears the bar, lower with full control","[beginner] The supinated grip recruits more bicep which makes this slightly easier than pull-ups for most people","[intermediate] Supinated grip allows a stronger peak contraction at the top — use it","[intermediate] Pause briefly at full extension at the bottom to eliminate elastic rebound","[intermediate] Keep elbows close to the body throughout","[advanced] Alternate between pull-ups and chin-ups across sessions for complete lat and bicep development","[advanced] Weighted chin-ups are one of the best bicep builders available with minimal equipment","[advanced] Lean back very slightly at the top to get a fuller lat contraction"], common_mistakes:["Elbows flaring wide — they should track forward and close to the body","Using momentum from the bottom position","Not pausing at the top to achieve a full contraction"], tutorial_url:"https://www.youtube.com/watch?v=brhRXlOhsAM", notes:"Slightly easier than pull-ups for most people." },
+  pullup_weighted: { id:"pullup_weighted", name:"Weighted Pull-up", movement_pattern:"pull", equipment_required:["pull_up_bar","dumbbells"], difficulty:4, class_affinity:["warrior","tank"], muscles_primary:["latissimus dorsi","biceps","rear deltoid"], muscles_secondary:["rhomboids","core","grip"], sets_default:4, reps_min:5, reps_max:8, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Identical to strict pull-up, the added load just makes everything harder", regression_id:"pullup_strict", progression_id:null, cues:["[beginner] Master strict pull-ups first — adding load to a broken pattern builds injury, not strength","[intermediate] Hold one dumbbell between your feet or thighs — squeeze your legs together to keep it secure","[intermediate] The added weight will expose any form breakdown — watch for kipping and shortened range","[intermediate] Start with 5 kg and only increase when 8 reps feel fully controlled","[advanced] This is the ceiling of pull progression with available equipment","[advanced] Volume and density are your tools beyond this point — more sets, less rest, cluster sets","[advanced] Pairing weighted pull-ups with dead hangs in the same session builds both strength and grip endurance simultaneously"], common_mistakes:["Adding weight before strict pull-ups are genuinely solid","Dumbbell shifting during the set and causing asymmetrical tension","Cutting range of motion as fatigue sets in"], tutorial_url:"https://www.youtube.com/watch?v=eGo4IYlbE5g", notes:"Ceiling of pull progression." },
+  inverted_row_elevated: { id:"inverted_row_elevated", name:"Inverted Row (Feet Elevated)", movement_pattern:"pull", equipment_required:["pull_up_bar","chair"], difficulty:3, class_affinity:["warrior","tank","mage","ranger"], muscles_primary:["rhomboids","rear deltoid","middle trapezius"], muscles_secondary:["biceps","core","lower trapezius"], sets_default:4, reps_min:10, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-0-2-0", tempo_note:"Pull your chest up to the bar slowly, squeeze your shoulder blades together at the top, lower yourself with control", regression_id:"scapular_pullup", progression_id:"pullup_strict", cues:["[beginner] Set the bar low enough that you can hang underneath it with arms straight","[beginner] Place feet on a chair so your body is horizontal","[beginner] Pull your chest up to the bar by squeezing your shoulder blades together","[intermediate] Keep your body in a straight plank line throughout — don't let hips sag","[intermediate] Lead with the chest, not the chin — this keeps the upper back engaged properly","[intermediate] Squeeze shoulder blades together hard at the top before lowering","[advanced] Horizontal body position is harder than inclined — ensure you're fully horizontal before adding load","[advanced] Place a dumbbell on your chest for added resistance","[advanced] This is your primary horizontal pull — it directly counters the kyphosis that desk work creates"], common_mistakes:["Hips sagging and breaking the plank line","Pulling with arms only instead of leading with scapular retraction","Not achieving full arm extension at the bottom"], tutorial_url:"https://www.youtube.com/watch?v=PGcTxvw6_YY", notes:"Horizontal pull is as important as vertical pull." },
+  // PULL — GYM
+  cable_face_pull: { id:"cable_face_pull", name:"Cable Face Pull", movement_pattern:"pull", equipment_required:["cable_machine"], difficulty:1, class_affinity:["warrior","tank","assassin","mage","ranger"], muscles_primary:["rear deltoid","middle trapezius","rotator cuff — external rotation"], muscles_secondary:["rhomboids","biceps","lower trapezius"], sets_default:3, reps_min:15, reps_max:20, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-2-1-0", tempo_note:"Pull toward your face slowly, hold for 2 seconds with elbows high, release with control — this is a health exercise, not a heavy exercise", regression_id:null, progression_id:"lat_pulldown", cues:["[beginner] Set the cable at face height or slightly above, use a rope attachment","[beginner] Pull the rope toward your face, hands separating as they approach — elbows stay high and wide","[beginner] Hold the end position for 2 seconds — feel the rear delts and upper back squeeze","[intermediate] Elbows must be at or above shoulder height throughout — dropping them turns this into a row","[intermediate] External rotation at the end of the pull — thumbs point back, wrists rotate outward","[intermediate] This is a high-rep health exercise — ego has no place here. 15–20 reps with controlled form","[advanced] Face pulls done correctly are one of the best shoulder longevity investments in a gym program","[advanced] Pair with every push session as a direct antagonist and shoulder health measure","[advanced] The external rotation component directly strengthens the infraspinatus and teres minor — the most commonly injured rotator cuff muscles"], common_mistakes:["Elbows dropping below shoulder height and turning it into a horizontal row","Going too heavy and losing the external rotation component","Rushing through reps — the 2-second hold is non-negotiable"], tutorial_url:"https://www.youtube.com/watch?v=rep-qVOkqgk", notes:"Non-negotiable for shoulder health in any gym program. Never skip this." },
+  lat_pulldown: { id:"lat_pulldown", name:"Lat Pulldown", movement_pattern:"pull", equipment_required:["cable_machine"], difficulty:2, class_affinity:["warrior","tank","assassin","mage","ranger"], muscles_primary:["latissimus dorsi","biceps"], muscles_secondary:["rear deltoid","lower trapezius","rhomboids"], sets_default:3, reps_min:10, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-3-0", tempo_note:"Pull down in 2 seconds, hold briefly at the bottom, lower the bar slowly for 3 seconds — the slow eccentric is where lat development happens", regression_id:"cable_face_pull", progression_id:"cable_row_seated", cues:["[beginner] Grip the bar slightly wider than shoulder-width, lean back very slightly","[beginner] Pull the bar down to your upper chest — not behind your neck","[beginner] Lower the bar fully until arms are straight — full range of motion","[intermediate] Initiate the pull by depressing the scapulae first — the same movement as a scapular pull-up","[intermediate] Think about pulling your elbows to your back pockets, not pulling your hands down","[intermediate] The slow 3-second eccentric is where most of the stimulus is — don't just let the weight fly back up","[advanced] Chest up and slight lean back creates a better lat stretch at the top of the movement","[advanced] Supinated grip (palms toward you) increases bicep contribution and allows a stronger peak contraction","[advanced] If you can do more than 12 reps easily, you're ready to transition to bodyweight pull-ups"], common_mistakes:["Pulling behind the neck — cervical spine injury risk with zero benefit over front pulldown","Using body swing to generate momentum instead of lat strength","Not reaching full arm extension at the top — cuts the range of motion in half"], tutorial_url:"https://www.youtube.com/watch?v=CAwf7n6Luuc", notes:"The machine path to pull-up strength." },
+  cable_row_seated: { id:"cable_row_seated", name:"Cable Row — Seated", movement_pattern:"pull", equipment_required:["cable_machine"], difficulty:2, class_affinity:["warrior","tank","assassin","ranger"], muscles_primary:["latissimus dorsi","rhomboids","middle trapezius"], muscles_secondary:["biceps","rear deltoid","erector spinae"], sets_default:3, reps_min:10, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-2-3-0", tempo_note:"Pull the handle to your lower chest, squeeze shoulder blades together for 2 seconds, release slowly for 3 seconds", regression_id:"lat_pulldown", progression_id:"barbell_row_bent_over", cues:["[beginner] Sit upright on the bench, feet on the platform, slight bend in the knees","[beginner] Pull the handle to your lower sternum — not your belly, not your chin","[beginner] Hold the contracted position and squeeze your shoulder blades together before releasing","[intermediate] Torso should stay mostly upright — a slight natural lean is fine but don't rock back and forth to generate momentum","[intermediate] Elbows travel close to the body — not flaring wide","[intermediate] The slow 3-second return is where the rhomboids and mid-traps are built — control it","[advanced] The horizontal row is as important as vertical pull for balanced scapular health","[advanced] Vary the grip across sessions — wide, narrow, neutral, supinated — each changes the emphasis slightly","[advanced] If the weight requires significant torso swing, it's too heavy — reduce and control the movement"], common_mistakes:["Rocking the torso back and forth — turns it into a momentum exercise","Elbows flaring out wide — shifts load away from lats toward rear delts","Pulling to the belly instead of lower chest — changes the muscle engagement pattern"], tutorial_url:"https://www.youtube.com/watch?v=GZbfZ033f74", notes:"Primary horizontal pull in the gym." },
+  barbell_row_bent_over: { id:"barbell_row_bent_over", name:"Barbell Row — Bent Over", movement_pattern:"pull", equipment_required:["barbell"], difficulty:3, class_affinity:["warrior","tank"], muscles_primary:["latissimus dorsi","rhomboids","middle trapezius"], muscles_secondary:["biceps","rear deltoid","erector spinae","core"], sets_default:4, reps_min:6, reps_max:8, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-3-0", tempo_note:"Pull to the lower chest, hold briefly, lower for 3 seconds — the hinge position means your lower back is working isometrically the entire set", regression_id:"cable_row_seated", progression_id:"pullup_weighted", cues:["[beginner] Hip-width stance, hinge forward until torso is roughly 45 degrees — this is not an upright row","[beginner] Pull the bar to your lower chest or upper abdomen — not up toward your chin","[beginner] Keep your lower back neutral throughout — it's working hard just to hold position","[intermediate] The hinge position is maintained throughout the set — if you stand up to row, the weight is too heavy","[intermediate] Think about driving your elbows back and up — the bar follows","[intermediate] Controlled eccentric is where the growth is — 3 seconds down every rep","[advanced] Pendlay row variation — bar starts on the floor every rep, explosive pull, controlled return — is a power-focused alternative","[advanced] Overhand vs underhand grip changes emphasis: overhand hits more upper back, underhand hits more lower lat and bicep","[advanced] Bracing the core in the hinge position while rowing heavy is a significant demand — treat this as a full posterior chain exercise"], common_mistakes:["Torso too upright — turns it into an upright row, completely different muscles","Using momentum by bouncing the torso up to help the bar","Not maintaining the hinge position throughout the set"], tutorial_url:"https://www.youtube.com/watch?v=vT2GjY_Umpw", notes:"Heavy horizontal pull. One of the best back builders available." },
+  dumbbell_row_single_arm: { id:"dumbbell_row_single_arm", name:"Single-Arm Dumbbell Row", movement_pattern:"pull", equipment_required:["dumbbells","chair"], difficulty:2, class_affinity:["warrior","assassin","tank","ranger"], muscles_primary:["latissimus dorsi","rhomboids"], muscles_secondary:["biceps","rear deltoid","core — anti-rotation"], sets_default:3, reps_min:10, reps_max:12, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"2-1-3-0", tempo_note:"Pull up to the hip, hold briefly, lower slowly for 3 seconds — the goal is maximum lat stretch at the bottom and maximum contraction at the top", regression_id:"cable_row_seated", progression_id:"barbell_row_bent_over", cues:["[beginner] One knee and same-side hand on the bench, other foot on the floor","[beginner] Pull the dumbbell from a hanging position up to your hip — not your armpit","[beginner] Hold at the top and squeeze the lat before lowering","[intermediate] Let the dumbbell stretch the lat fully at the bottom — allow slight scapular protraction","[intermediate] Drive the elbow back and up — the dumbbell just follows","[intermediate] Don't rotate the torso to help the pull — keep hips square","[advanced] The unilateral nature allows greater range of motion than barbell rows","[advanced] A full stretch at the bottom followed by a full contraction at the top is the stimulus — not just moving the weight through space","[advanced] Heavy dumbbells here are one of the most effective back exercises available without a cable machine"], common_mistakes:["Pulling to the armpit instead of the hip — changes the muscle emphasis","Rotating the torso to assist the pull — reduces the unilateral demand","Not allowing the lat to fully stretch at the bottom — cuts the range of motion"], tutorial_url:"https://www.youtube.com/watch?v=pYcpY20QaE8", notes:"The dumbbell row beats most machine rows for lat development." },
+
+  // PUSH
+  wall_pushup: { id:"wall_pushup", name:"Wall Push-up", movement_pattern:"push", equipment_required:[], difficulty:1, class_affinity:["warrior","assassin","mage","ranger","tank"], muscles_primary:["pectoralis major","anterior deltoid"], muscles_secondary:["triceps","serratus anterior","core"], sets_default:3, reps_min:15, reps_max:20, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-2-0", tempo_note:"Lower your chest toward the wall for 2 seconds, push back out smoothly — focus on keeping your body in a straight line", regression_id:null, progression_id:"pushup_standard", cues:["[beginner] Stand arm's length from the wall, hands at shoulder height and width","[beginner] Keep your body straight from head to heels — don't let your hips push back","[beginner] Lower your chest to the wall, then push back to straight arms","[intermediate] The further your feet are from the wall, the harder it becomes","[intermediate] Focus on serratus anterior engagement — at the top, push the wall away slightly to protract the scapulae","[intermediate] This is the safest entry point for anyone with shoulder pain or very low upper body strength","[advanced] Not a training stimulus at this level — use as a shoulder warm-up only"], common_mistakes:["Letting hips push backward instead of maintaining a straight body line","Flaring elbows too wide — keep them at roughly 45 degrees from the torso","Only moving the arms while the body stays rigid and vertical"], tutorial_url:"https://www.youtube.com/watch?v=rK5GeCMiHpM", notes:"Entry point for complete beginners." },
+  pushup_standard: { id:"pushup_standard", name:"Push-up — Standard", movement_pattern:"push", equipment_required:[], difficulty:2, class_affinity:["warrior","assassin","mage","ranger","tank"], muscles_primary:["pectoralis major","anterior deltoid","triceps"], muscles_secondary:["serratus anterior","core","hip flexors"], sets_default:3, reps_min:10, reps_max:15, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-2-0", tempo_note:"Lower your chest to the floor for 2 seconds, push back up — keep your body straight the whole time like a moving plank", regression_id:"wall_pushup", progression_id:"pushup_diamond", cues:["[beginner] Hands slightly wider than shoulder-width, fingers pointing forward","[beginner] Keep your body in a straight line from head to heels — squeeze your glutes and brace your core","[beginner] Lower until your chest nearly touches the floor, then push back up","[intermediate] Elbows should track at roughly 45 degrees from your torso — not flared wide, not pinned to your sides","[intermediate] At the top, push the floor away slightly to protract the scapulae — this engages serratus anterior and protects the shoulder","[intermediate] Full range of motion — chest to floor, arms fully extended at the top","[advanced] Use as a warm-up or high-rep finisher","[advanced] Tempo manipulation is your primary tool — slow eccentrics or paused reps","[advanced] Adding a backpack with weight turns this into a legitimate strength exercise again"], common_mistakes:["Hips sagging toward the floor — core not engaged","Elbows flaring out to 90 degrees — shoulder impingement risk","Partial range of motion — not reaching full extension at the top or full depth at the bottom"], tutorial_url:"https://www.youtube.com/watch?v=IODxDxX7oi4", notes:"The foundation of all push variations." },
+  pushup_diamond: { id:"pushup_diamond", name:"Diamond Push-up", movement_pattern:"push", equipment_required:[], difficulty:3, class_affinity:["warrior","assassin","tank"], muscles_primary:["triceps","pectoralis major — inner"], muscles_secondary:["anterior deltoid","core"], sets_default:3, reps_min:10, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-2-0", tempo_note:"Lower slowly for 2 seconds — this will feel harder than a standard push-up immediately because the triceps are doing more work", regression_id:"pushup_standard", progression_id:"pushup_archer", cues:["[beginner] Hands form a diamond shape directly under your chest — thumbs and index fingers touching","[beginner] Keep elbows tracking back along your sides, not flaring out","[beginner] Lower your chest toward your hands, not your hands toward your chest","[intermediate] The narrow hand position shifts load heavily to triceps and inner chest","[intermediate] Elbows should stay close to the ribcage throughout — flaring them defeats the purpose","[intermediate] If wrists hurt, rotate hands slightly outward to reduce wrist extension stress","[advanced] Elevating feet increases the load on upper chest and shoulders","[advanced] Paused reps at the bottom are extremely effective here — triceps under stretch","[advanced] Can be superseted with archer push-ups for a complete push session"], common_mistakes:["Elbows flaring wide — completely changes the muscle emphasis","Wrists bent at painful angles — adjust hand rotation slightly if needed","Hips rising or sagging out of the plank position"], tutorial_url:"https://www.youtube.com/watch?v=J0DnG1_S92I", notes:"Primary tricep builder." },
+  pushup_archer: { id:"pushup_archer", name:"Archer Push-up", movement_pattern:"push", equipment_required:[], difficulty:4, class_affinity:["warrior","assassin"], muscles_primary:["pectoralis major","anterior deltoid","triceps"], muscles_secondary:["serratus anterior","core","biceps — lengthened"], sets_default:3, reps_min:6, reps_max:10, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"3-1-2-0", tempo_note:"Lower toward one hand slowly for 3 seconds — the opposite arm straightens out to the side. Push back to center", regression_id:"pushup_diamond", progression_id:"pushup_feet_elevated", cues:["[beginner] Start in a wide push-up position — hands much wider than standard","[beginner] Lower toward one hand while the opposite arm straightens — that arm acts as a guide, not a support","[beginner] Push back to center and repeat on the other side","[intermediate] The straight arm should have minimal weight on it — most load should be on the bending arm","[intermediate] Think of it as a one-arm push-up with a balance assist","[intermediate] Keep hips square — don't rotate toward the working side","[advanced] The straighter you keep the assisting arm, the harder the working side works","[advanced] This is a direct progression toward one-arm push-ups","[advanced] Film yourself from the front to check hip rotation — it's easy to cheat without noticing"], common_mistakes:["Pushing equally through both arms — defeats the unilateral purpose","Hips rotating toward the working side","Insufficient width in starting hand position making the movement impossible to perform correctly"], tutorial_url:"https://www.youtube.com/watch?v=F0GFmfUNzKo", notes:"Bridges the gap between standard push-ups and one-arm push-ups." },
+  pushup_feet_elevated: { id:"pushup_feet_elevated", name:"Push-up — Feet Elevated", movement_pattern:"push", equipment_required:["chair"], difficulty:4, class_affinity:["warrior","assassin","tank"], muscles_primary:["upper pectoralis major","anterior deltoid","triceps"], muscles_secondary:["serratus anterior","core"], sets_default:3, reps_min:8, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-2-0", tempo_note:"Lower for 2 seconds — the angle shifts more load to the upper chest and shoulders than a flat push-up", regression_id:"pushup_archer", progression_id:"pike_pushup", cues:["[beginner] Place feet on a chair, hands on the floor in standard push-up position","[beginner] The higher your feet, the more it resembles an overhead press — start low","[beginner] Lower your chest toward the floor, not your head toward the floor","[intermediate] Upper chest and anterior deltoid take over as primary movers as the angle increases","[intermediate] Keep the same elbow tracking as standard push-ups — 45 degrees from torso","[intermediate] Core bracing is more important here — the inclined position creates more spinal extension demand","[advanced] This is your bridge to overhead pressing strength","[advanced] Progressing the chair height over time is a legitimate way to build toward handstand push-ups","[advanced] Pair with pike push-ups in the same session to cover both upper chest and overhead pressing demands"], common_mistakes:["Feet too high before shoulder strength allows it — compensation through lower back arch","Head dropping toward floor instead of chest — changes the muscle emphasis entirely","Losing core tension and hips sagging as fatigue sets in"], tutorial_url:"https://www.youtube.com/watch?v=MpLHMKTi6m4", notes:"Shifts emphasis to upper chest and shoulders." },
+  pike_pushup: { id:"pike_pushup", name:"Pike Push-up", movement_pattern:"push", equipment_required:[], difficulty:3, class_affinity:["warrior","assassin","mage"], muscles_primary:["anterior deltoid","lateral deltoid","triceps"], muscles_secondary:["upper pectoralis","serratus anterior","core"], sets_default:3, reps_min:8, reps_max:10, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-2-0", tempo_note:"Hips high in an inverted V shape, lower the top of your head toward the floor for 2 seconds, push back up", regression_id:"pushup_feet_elevated", progression_id:"pike_pushup_elevated", cues:["[beginner] Start in a downward dog position — hips high, body forming an inverted V","[beginner] Lower the top of your head toward the floor between your hands","[beginner] Push back up to the starting position — this is a vertical pressing movement, not a chest push-up","[intermediate] The more vertical your torso, the more it resembles a shoulder press","[intermediate] Keep elbows from flaring excessively — slight outward track is fine but not 90 degrees","[intermediate] Full range of motion — head nearly touches floor at the bottom, arms fully extended at the top","[advanced] Elevating feet increases the vertical demand significantly","[advanced] This is your primary overhead strength builder with no equipment","[advanced] Progress toward wall-facing handstand negatives from the elevated version"], common_mistakes:["Hips dropping during the movement and turning it into a push-up","Not going low enough — head should nearly touch the floor","Jumping straight to elevated version before flat pike is controlled"], tutorial_url:"https://www.youtube.com/watch?v=sposDGMQmqM", notes:"The only true overhead pressing movement available without equipment." },
+  pike_pushup_elevated: { id:"pike_pushup_elevated", name:"Pike Push-up — Feet Elevated", movement_pattern:"push", equipment_required:["chair"], difficulty:5, class_affinity:["warrior","assassin"], muscles_primary:["anterior deltoid","lateral deltoid","triceps"], muscles_secondary:["upper pectoralis","serratus anterior","core"], sets_default:3, reps_min:6, reps_max:8, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"2-1-2-0", tempo_note:"Feet elevated on chair — the overhead pressing demand increases significantly", regression_id:"pike_pushup", progression_id:null, cues:["[beginner] Master flat pike push-ups first — this variation is a significant jump in difficulty","[intermediate] Feet on chair, hands on floor — the more elevated the feet the more vertical the press","[intermediate] Head travels straight down between hands to the floor","[intermediate] Keep hips directly above shoulders as much as possible","[advanced] At full elevation with hips stacked over shoulders this becomes a handstand push-up negative","[advanced] Wall-facing handstand negatives are the natural next step — find a wall, kick up, lower slowly","[advanced] This is the ceiling of overhead push progression with available equipment"], common_mistakes:["Hips drifting backward as fatigue sets in — reducing the overhead demand","Insufficient elevation to get meaningful overhead stimulus","Rushing reps — this movement requires full control at every point"], tutorial_url:"https://www.youtube.com/watch?v=sposDGMQmqM", notes:"Ceiling of overhead push progression." },
+  pallof_pressout: { id:"pallof_pressout", name:"Pallof Press-Out (Dumbbell)", movement_pattern:"push", equipment_required:["dumbbells"], difficulty:2, class_affinity:["warrior","tank","mage","ranger"], muscles_primary:["core — anti-rotation","obliques"], muscles_secondary:["anterior deltoid","triceps","transverse abdominis"], sets_default:3, reps_min:8, reps_max:8, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"2-2-2-0", tempo_note:"Hold the dumbbell at your chest with both hands, press it straight out in front of you slowly, hold for 2 seconds, bring it back in", regression_id:null, progression_id:null, cues:["[beginner] Half-kneeling position — one knee down, one foot forward","[beginner] Hold a 5 kg dumbbell at your chest with both hands","[beginner] Press it straight out in front of you and resist any urge to rotate your torso","[intermediate] The challenge is keeping your torso completely square while the weight tries to pull you into rotation","[intermediate] Breathe out as you press out, hold, breathe in as you return","[intermediate] The kneeling position eliminates lower body compensation — the core has to do all the work","[advanced] After the anti-rotation press, add a slow controlled rotation toward the hip and back","[advanced] This trains anti-rotation on the press and controlled rotation on the return — both matter for spine health","[advanced] Progress to standing position for increased demand on hip stability"], common_mistakes:["Torso rotating as the dumbbell is pressed out — the whole point is to resist this","Standing instead of kneeling — removes the core isolation","Using too heavy a dumbbell and compensating with torso rotation"], tutorial_url:"https://www.youtube.com/watch?v=AH_QZLm_0-s", notes:"Anti-rotation pressing is as important as pure pushing strength." },
+  // PUSH — GYM
+  dumbbell_bench_press: { id:"dumbbell_bench_press", name:"Dumbbell Bench Press", movement_pattern:"push", equipment_required:["dumbbells","chair"], difficulty:2, class_affinity:["warrior","tank","assassin","ranger"], muscles_primary:["pectoralis major","anterior deltoid","triceps"], muscles_secondary:["serratus anterior","core"], sets_default:3, reps_min:10, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower the dumbbells slowly for 3 seconds until they reach chest level, press back up — dumbbells allow more range of motion than a barbell", regression_id:"pushup_standard", progression_id:"barbell_bench_press", cues:["[beginner] Lie on a bench, dumbbells at chest level, elbows at roughly 45–60 degrees from your torso","[beginner] Press the dumbbells up and slightly together at the top — full arm extension","[beginner] Lower slowly until the dumbbells are at chest height — don't let them go too far below the chest", "[intermediate] Retract the shoulder blades and drive them into the bench — this protects the shoulder and creates a stable base","[intermediate] The range of motion advantage over barbell is real — use it by allowing a controlled stretch at the bottom","[intermediate] Elbows at 45–60 degrees, not 90 — 90 degrees puts unnecessary stress on the shoulder joint","[advanced] The independent dumbbell path exposes and corrects left-right strength asymmetry","[advanced] Pause reps at the bottom eliminate elastic rebound and increase pectoral demand significantly","[advanced] Slow eccentrics followed by explosive concentrics is the optimal tempo for hypertrophy here"], common_mistakes:["Elbows flaring to 90 degrees — shoulder impingement risk","Dumbbells going too low past the chest — shoulder strain without additional benefit","Not retracting shoulder blades — unstable base and reduced pressing power"], tutorial_url:"https://www.youtube.com/watch?v=QsYre__-aro", notes:"More range of motion than barbell bench and better for identifying asymmetries." },
+  barbell_bench_press: { id:"barbell_bench_press", name:"Barbell Bench Press", movement_pattern:"push", equipment_required:["barbell"], difficulty:3, class_affinity:["warrior","tank"], muscles_primary:["pectoralis major","anterior deltoid","triceps"], muscles_secondary:["serratus anterior","core","latissimus dorsi"], sets_default:4, reps_min:5, reps_max:8, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower the bar to your lower chest with control for 3 seconds, press back up with intent — don't bounce the bar off the chest", regression_id:"dumbbell_bench_press", progression_id:null, cues:["[beginner] Grip just outside shoulder-width, bar over the lower chest when unracked","[beginner] Retract shoulder blades and drive them into the bench — this is your foundation","[beginner] Lower to just below the nipple line — touching the chest, not bouncing off it","[intermediate] Leg drive — feet flat on the floor, push through the heels to create full-body tension","[intermediate] Think about bending the bar outward as you press — this engages the lats and keeps elbows from flaring","[intermediate] The bar path is diagonal — it travels back over the face at the top, not straight up","[advanced] The arch debate: a natural arch with shoulder blades retracted is fine. Extreme powerlifting arch is a choice for competition, not general training","[advanced] Controlled eccentric, pause at the chest, explosive press is the most effective training variation","[advanced] Touch the chest every rep — if you can't, the weight is too heavy or the range of motion is being cut"], common_mistakes:["Bouncing the bar off the chest — takes tension off the muscle and risks injury","Elbows flaring to 90 degrees — shoulder impingement under heavy load","Unracking with bent arms and immediately pressing — set your position first"], tutorial_url:"https://www.youtube.com/watch?v=vcBig73ojpE", notes:"The primary horizontal pressing exercise for loaded strength." },
+  incline_dumbbell_press: { id:"incline_dumbbell_press", name:"Incline Dumbbell Press", movement_pattern:"push", equipment_required:["dumbbells","chair"], difficulty:3, class_affinity:["warrior","tank","assassin"], muscles_primary:["upper pectoralis major","anterior deltoid","triceps"], muscles_secondary:["serratus anterior","core"], sets_default:3, reps_min:10, reps_max:12, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower slowly for 3 seconds to chest level, press back up — the incline angle shifts the work to the upper chest", regression_id:"dumbbell_bench_press", progression_id:null, cues:["[beginner] Set the bench to 30–45 degrees — higher angles shift the work to shoulders rather than chest","[beginner] Dumbbells start at shoulder level, press up and slightly together","[beginner] Lower until dumbbells reach chest level — controlled, no bounce","[intermediate] 30 degrees is generally optimal for upper chest emphasis — steeper than 45 and you're doing a shoulder press","[intermediate] Shoulder blade retraction is harder on an incline but still necessary","[intermediate] The stretch at the bottom on an incline is shallower than flat bench — go slightly deeper with control","[advanced] Upper chest is chronically underdeveloped in most people because flat pressing dominates programs — prioritize this","[advanced] Incline dumbbell press is preferable to incline barbell for most people because of the freer range of motion","[advanced] Pair with flat bench in the same session for complete pectoral coverage"], common_mistakes:["Bench too steep — this becomes a shoulder press at 60+ degrees","Not retracting shoulder blades — same error as flat bench","Dumbbells drifting too wide at the bottom instead of tracking at roughly 45 degrees"], tutorial_url:"https://www.youtube.com/watch?v=0G2_XV7slIg", notes:"Upper chest work is non-negotiable for balanced pressing development." },
+  barbell_overhead_press: { id:"barbell_overhead_press", name:"Barbell Overhead Press", movement_pattern:"push", equipment_required:["barbell"], difficulty:3, class_affinity:["warrior","tank","assassin"], muscles_primary:["anterior deltoid","lateral deltoid","triceps"], muscles_secondary:["upper pectoralis","serratus anterior","core","traps"], sets_default:4, reps_min:5, reps_max:8, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-1-0", tempo_note:"Lower the bar to your clavicle with control for 3 seconds, press straight up and slightly back at the top — the bar should pass close to your face", regression_id:"pike_pushup_elevated", progression_id:null, cues:["[beginner] Grip just outside shoulder-width, bar resting on your clavicles and front deltoids","[beginner] Press the bar straight up — your head moves back slightly to let the bar pass, then forward again at the top","[beginner] Full lockout at the top with biceps close to your ears","[intermediate] Brace the core and squeeze the glutes before pressing — this is a full-body exercise","[intermediate] The bar should be as vertical as possible when viewed from the side — forward drift loads the shoulders badly","[intermediate] Elbows at roughly 45–60 degrees from the torso at the start — not directly in front or directly to the side","[advanced] The overhead press is one of the most honest strength tests — no leg drive, no arch, just shoulder and tricep strength","[advanced] Press the bar back slightly at the very top to achieve the most efficient overhead lockout position","[advanced] Strict press strength transfers directly to athletic overhead performance in a way that dumbbell pressing doesn't fully replicate"], common_mistakes:["Bar drifting forward instead of going straight up — the most common error","Lower back arching to press heavier than the shoulders can actually handle","Not reaching full lockout at the top"], tutorial_url:"https://www.youtube.com/watch?v=2yjwXTZQDDI", notes:"The most honest overhead strength test." },
+  cable_chest_fly: { id:"cable_chest_fly", name:"Cable Chest Fly", movement_pattern:"push", equipment_required:["cable_machine"], difficulty:2, class_affinity:["warrior","tank","assassin"], muscles_primary:["pectoralis major — stretch emphasis"], muscles_secondary:["anterior deltoid","biceps — lengthened"], sets_default:3, reps_min:12, reps_max:15, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-2-1-0", tempo_note:"Open arms slowly for 3 seconds, feel the pec stretch, hold for 2 seconds, bring arms together — this is a stretch and contraction exercise, not a power exercise", regression_id:"dumbbell_bench_press", progression_id:null, cues:["[beginner] Set cables at chest height, stand in the center with one foot forward for balance","[beginner] Slight bend in the elbows throughout — this is not a straight-arm movement","[beginner] Open arms wide until you feel a stretch across the chest, then bring them together","[intermediate] The cable provides constant tension throughout the range of motion — unlike dumbbells which lose tension at the top","[intermediate] The stretch at the open position is the primary stimulus — don't rush through it","[intermediate] Squeeze the pecs hard as the hands come together — imagine hugging a tree","[advanced] This is an isolation and stretch exercise — pair it after compound pressing, not instead of it","[advanced] High cable position emphasizes lower pec, low cable position emphasizes upper pec","[advanced] The 2-second hold at the stretched position is where the pec receives the most growth stimulus — never skip it"], common_mistakes:["Straightening the elbows fully and turning it into a cable raise","Rushing through the stretched position — this defeats the entire purpose","Using too much weight and losing the arc motion — turning it into a pull"], tutorial_url:"https://www.youtube.com/watch?v=taI4XduLpTk", notes:"The cable fly provides constant tension that dumbbell flys lose at the top." },
+
+  // CARRY
+  farmers_carry_bilateral: { id:"farmers_carry_bilateral", name:"Bilateral Farmer's Carry", movement_pattern:"carry", equipment_required:["dumbbells"], difficulty:1, class_affinity:["warrior","tank","ranger"], muscles_primary:["grip","forearms","trapezius"], muscles_secondary:["core","glutes","quadriceps"], sets_default:3, reps_min:40, reps_max:40, rep_mode:"distance", is_unilateral:false, duration_seconds:null, tempo_code:null, tempo_note:"Walk tall and steady — imagine balancing a book on your head. Don't let the dumbbells pull your shoulders forward or down", regression_id:null, progression_id:"farmers_carry_single", cues:["[beginner] Hold one dumbbell in each hand hanging at your sides","[beginner] Stand tall — shoulders back, chest up, eyes forward","[beginner] Walk smoothly — no waddling, no leaning side to side","[intermediate] Squeeze the handles hard — grip intensity directly drives forearm and trap activation","[intermediate] Keep shoulders packed down away from ears throughout","[intermediate] Breathe rhythmically — don't hold your breath under load","[advanced] At 5 kg per hand this is a warm-up — use a loaded backpack in one or both hands to increase challenge","[advanced] Focus on gait quality — each step should look identical, no asymmetry","[advanced] Accumulate total distance across sets rather than chasing heavier load with poor form"], common_mistakes:["Shoulders creeping up toward ears as fatigue sets in","Leaning forward at the torso","Shuffling steps instead of walking with full stride"], tutorial_url:"https://www.youtube.com/watch?v=rt17lmnaLSM", notes:"Entry point for all carry work." },
+  farmers_carry_single: { id:"farmers_carry_single", name:"Single-Arm Farmer's Carry", movement_pattern:"carry", equipment_required:["dumbbells"], difficulty:2, class_affinity:["warrior","tank","assassin","ranger"], muscles_primary:["grip","forearms","obliques","quadratus lumborum"], muscles_secondary:["trapezius","glutes","core"], sets_default:3, reps_min:40, reps_max:40, rep_mode:"distance", is_unilateral:true, duration_seconds:null, tempo_code:null, tempo_note:"Walk tall and don't lean toward the dumbbell side — your body will want to tilt, resist it", regression_id:"farmers_carry_bilateral", progression_id:"farmers_carry_rack", cues:["[beginner] Hold one dumbbell in one hand, other hand free","[beginner] Don't let your torso lean toward the dumbbell side — stand completely upright","[beginner] Your core is working hard to prevent the lean — that's the point","[intermediate] The quadratus lumborum on the non-loaded side is the primary stabilizer here","[intermediate] Keep the loaded shoulder packed down — don't let it shrug up as fatigue hits","[intermediate] Switch sides and note any asymmetry — most people have a weaker side","[advanced] With 5 kg the distance and time under load are your progression tools","[advanced] A loaded backpack in one hand dramatically increases the anti-lateral-flexion demand","[advanced] Identifying and correcting left-right asymmetry here translates directly to injury prevention"], common_mistakes:["Torso leaning toward the loaded side — reduces the core demand entirely","Loaded shoulder shrugging up toward the ear","Walking too fast and losing postural control"], tutorial_url:"https://www.youtube.com/watch?v=pB2sOGH0akk", notes:"Unilateral demand makes this significantly harder." },
+  farmers_carry_rack: { id:"farmers_carry_rack", name:"Rack Carry (Dumbbell)", movement_pattern:"carry", equipment_required:["dumbbells"], difficulty:3, class_affinity:["warrior","tank"], muscles_primary:["core","obliques","upper back","grip"], muscles_secondary:["anterior deltoid","biceps","quadratus lumborum"], sets_default:3, reps_min:30, reps_max:40, rep_mode:"distance", is_unilateral:true, duration_seconds:null, tempo_code:null, tempo_note:"Hold the dumbbell at shoulder height — elbow bent, dumbbell resting on the front of your shoulder. Walk tall and keep the dumbbell from tipping forward", regression_id:"farmers_carry_single", progression_id:"farmers_carry_overhead", cues:["[beginner] Hold the dumbbell at shoulder height with elbow bent — like the top of a bicep curl","[beginner] The dumbbell rests on your shoulder and forearm, not just gripped in the air","[beginner] Walk tall — don't let the weight pull your elbow down or torso sideways","[intermediate] The rack position challenges anterior core and shoulder stability simultaneously","[intermediate] Keep the elbow at roughly 90 degrees throughout — don't let it drop","[intermediate] Breathe into your ribcage — the rack position compresses breathing slightly which increases core demand","[advanced] Combining rack carry one side and farmer's carry the other is one of the most complete unilateral carries available","[advanced] The asymmetrical load creates rotational demand the core must resist","[advanced] Progress to overhead carry when rack carry feels stable and controlled"], common_mistakes:["Elbow dropping and dumbbell drifting forward away from the shoulder","Torso leaning away from the loaded side","Holding breath instead of breathing through the carry"], tutorial_url:"https://www.youtube.com/watch?v=TGPKSKlrpCo", notes:"The rack position is a completely different stability challenge." },
+  farmers_carry_overhead: { id:"farmers_carry_overhead", name:"Overhead Carry (Dumbbell)", movement_pattern:"carry", equipment_required:["dumbbells"], difficulty:4, class_affinity:["warrior","assassin"], muscles_primary:["shoulder stabilizers","rotator cuff","core"], muscles_secondary:["triceps","upper trapezius","obliques"], sets_default:3, reps_min:20, reps_max:30, rep_mode:"distance", is_unilateral:true, duration_seconds:null, tempo_code:null, tempo_note:"Press the dumbbell directly overhead with a locked elbow, then walk — if the elbow bends or the shoulder wobbles, the load is too heavy or the pattern isn't ready", regression_id:"farmers_carry_rack", progression_id:null, cues:["[beginner] Press one dumbbell directly overhead — arm fully locked out, bicep close to your ear","[beginner] Keep your ribcage down — don't arch your lower back to get the arm overhead","[beginner] Walk slowly — this exposes shoulder stability issues immediately","[intermediate] The locked elbow is non-negotiable — a bent elbow means the shoulder isn't stable enough for this variation yet","[intermediate] Keep the dumbbell stacked directly over the shoulder joint — not in front or behind","[intermediate] Eyes forward, not up at the dumbbell — trust the position","[advanced] The combination of overhead plus farmer's carry opposite side is one of the hardest unilateral core challenges available with this equipment","[advanced] Any pain or clicking overhead means regress immediately — this pattern requires genuine shoulder mobility and stability","[advanced] At 5 kg this is a stability challenge not a strength challenge — that's the correct use of it"], common_mistakes:["Lower back arching to compensate for limited shoulder mobility","Elbow bending under the load","Dumbbell drifting forward in front of the ear instead of stacking over the joint"], tutorial_url:"https://www.youtube.com/watch?v=5T4DMLF0nDo", notes:"Ceiling of carry progression." },
+  loaded_ruck: { id:"loaded_ruck", name:"Loaded Ruck (Backpack)", movement_pattern:"carry", equipment_required:["backpack","dumbbells"], difficulty:2, class_affinity:["warrior","tank","ranger"], muscles_primary:["trapezius","erector spinae","glutes"], muscles_secondary:["core","quadriceps","grip"], sets_default:1, reps_min:45, reps_max:60, rep_mode:"timed", is_unilateral:false, duration_seconds:2700, tempo_code:null, tempo_note:"Start with 5–8 kg in the backpack and walk at a brisk pace — you should be able to hold a conversation but feel the load by the end", regression_id:"farmers_carry_bilateral", progression_id:null, cues:["[beginner] Pack both dumbbells in the backpack with towels around them so they don't shift","[beginner] Stand tall — the loaded pack will want to pull you forward at the shoulders","[beginner] Start with flat terrain and shorter duration before adding hills or distance","[intermediate] Weight should sit high in the pack close to your back — low and loose weight ruins posture","[intermediate] Swing your arms naturally — don't let the pack restrict your gait","[intermediate] Varied terrain dramatically increases the stimulus — hills, grass, and uneven ground all add challenge","[advanced] This is your primary bone density and postural endurance tool","[advanced] At 10–15% bodyweight for 60–90 min you are doing serious work for skeletal health","[advanced] Combine with zone 2 heart rate for a cardiovascular and structural training session simultaneously"], common_mistakes:["Pack straps too loose causing the load to shift and pull backward","Leaning forward at the torso to compensate for the load","Starting too heavy or too long and accumulating joint fatigue before adapting"], tutorial_url:"https://www.youtube.com/watch?v=MHByBoKQAKM", notes:"The most longevity-dense single activity." },
+  // CORE
+  dead_bug: { id:"dead_bug", name:"Dead Bug", movement_pattern:"core", equipment_required:[], difficulty:1, class_affinity:["warrior","tank","assassin","mage","ranger"], muscles_primary:["transverse abdominis","rectus abdominis"], muscles_secondary:["hip flexors","lower back — anti-extension"], sets_default:3, reps_min:8, reps_max:8, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"3-1-3-0", tempo_note:"Lower one arm and the opposite leg slowly toward the floor for 3 seconds, then bring them back up — your lower back must stay pressed to the floor the entire time", regression_id:null, progression_id:"hollow_body_hold", cues:["[beginner] Lie on your back, arms pointing to the ceiling, knees bent at 90 degrees in the air","[beginner] Press your lower back firmly into the floor — this must not change throughout the movement","[beginner] Lower one arm overhead and the opposite leg toward the floor simultaneously, then return","[intermediate] The lower back contact with the floor is the only cue that matters — everything else is secondary","[intermediate] Exhale fully before each rep — this engages the transverse abdominis automatically","[intermediate] If your lower back lifts off the floor at any point, your range of motion is too large — reduce it","[advanced] Hold a 5 kg dumbbell in the extending arm for increased anti-extension demand","[advanced] Full range — arm touches floor overhead, heel hovers just above the floor","[advanced] Breathing pattern — exhale on the lower, inhale on the return"], common_mistakes:["Lower back arching off the floor — the most common error","Moving too fast and using momentum instead of control","Holding breath throughout the movement"], tutorial_url:"https://www.youtube.com/watch?v=4XLEnwUr1d8", notes:"The best anti-extension core exercise for beginners." },
+  hollow_body_hold: { id:"hollow_body_hold", name:"Hollow Body Hold", movement_pattern:"core", equipment_required:[], difficulty:3, class_affinity:["warrior","assassin","mage"], muscles_primary:["transverse abdominis","rectus abdominis","hip flexors"], muscles_secondary:["lower back — anti-extension","serratus anterior"], sets_default:3, reps_min:30, reps_max:60, rep_mode:"timed", is_unilateral:false, duration_seconds:45, tempo_code:null, tempo_note:"Hold the position for as long as you can keep your lower back on the floor — 10 seconds with perfect form beats 30 seconds with an arched back", regression_id:"dead_bug", progression_id:"hollow_body_rock", cues:["[beginner] Lie on your back, press your lower back into the floor","[beginner] Raise your arms overhead and legs off the floor — find the lowest position where your back stays flat","[beginner] Hold that position — it should feel hard within 15–20 seconds","[intermediate] Arms reach overhead, legs extended and low — the lower the legs the harder it is","[intermediate] Ribs down — don't let the ribcage flare upward","[intermediate] Think about pulling your belly button toward your spine throughout","[advanced] Add a 5 kg dumbbell held overhead or between the feet","[advanced] The hollow body position is the foundation of handstand pressing and gymnastics strength","[advanced] Pair with arch holds on the floor for complete spinal control in both directions"], common_mistakes:["Lower back arching off the floor — regress to dead bug immediately","Legs too high — reduces the anti-extension demand significantly","Ribcage flaring upward instead of ribs staying down"], tutorial_url:"https://www.youtube.com/watch?v=LlDNef_Ztsc", notes:"The gymnastic foundation movement." },
+  hollow_body_rock: { id:"hollow_body_rock", name:"Hollow Body Rock", movement_pattern:"core", equipment_required:[], difficulty:4, class_affinity:["warrior","assassin"], muscles_primary:["transverse abdominis","rectus abdominis","hip flexors"], muscles_secondary:["lower back — anti-extension","serratus anterior"], sets_default:3, reps_min:10, reps_max:15, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:null, tempo_note:"Rock slowly and gently — the hollow position must be maintained throughout. If you lose the shape, stop and reset", regression_id:"hollow_body_hold", progression_id:null, cues:["[beginner] Start in the hollow body hold position","[beginner] Rock forward and backward gently while maintaining the same body shape","[beginner] Think of your body as a rigid banana — the shape doesn't change, only the rocking motion","[intermediate] The rocking motion should be smooth and continuous — no jerking or loss of position","[intermediate] If the lower back lifts off the floor at any point in the rock, regress to the hold","[intermediate] Full range — rock from shoulders to heels","[advanced] Add a dumbbell overhead to increase the anti-extension demand during the rock","[advanced] The dynamic nature of the rock makes it significantly harder than the static hold","[advanced] This is a direct gymnastic prerequisite movement"], common_mistakes:["Losing the hollow position during the rock and arching the lower back","Using momentum to generate the rock instead of core tension","Rocking only partially instead of full head-to-heel range"], tutorial_url:"https://www.youtube.com/watch?v=2GKDHMmkMHc", notes:"Dynamic version of the hollow hold." },
+  bird_dog: { id:"bird_dog", name:"Bird-Dog", movement_pattern:"core", equipment_required:[], difficulty:2, class_affinity:["warrior","tank","mage","ranger"], muscles_primary:["erector spinae","glutes","core — anti-rotation"], muscles_secondary:["quadratus lumborum","shoulder stabilizers","hip extensors"], sets_default:3, reps_min:8, reps_max:8, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"2-3-2-0", tempo_note:"Extend one arm and the opposite leg slowly, hold for 2 seconds (3 in intermediate), bring them back in with control — don't let your hips rotate", regression_id:"dead_bug", progression_id:"bird_dog_weighted", cues:["[beginner] Start on all fours — hands under shoulders, knees under hips","[beginner] Extend one arm forward and the opposite leg back simultaneously","[beginner] Keep your hips completely level — don't let the raised leg side hike up","[intermediate] Think of a string pulling your extended hand and foot in opposite directions","[intermediate] Hips must stay square to the floor — this is the entire point of the exercise","[intermediate] Return slowly — the return is as important as the extension","[advanced] A 3-sec hold at full extension with a dumbbell in the hand is genuinely hard","[advanced] Focus on the glute of the extended leg — squeeze it hard during the hold","[advanced] Keep the supporting shoulder packed — don't let it collapse toward the ear"], common_mistakes:["Hips rotating toward the raised leg side","Extending the leg too high and arching the lower back","Rushing through reps without the hold"], tutorial_url:"https://www.youtube.com/watch?v=wiFNA3sqjCA", notes:"Primary anti-rotation and spinal stability exercise." },
+  bird_dog_weighted: { id:"bird_dog_weighted", name:"Bird-Dog — Weighted", movement_pattern:"core", equipment_required:["dumbbells"], difficulty:3, class_affinity:["warrior","tank"], muscles_primary:["erector spinae","glutes","core — anti-rotation"], muscles_secondary:["quadratus lumborum","shoulder stabilizers","hip extensors"], sets_default:3, reps_min:8, reps_max:8, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"2-3-2-0", tempo_note:"Same as standard bird-dog but with a dumbbell in the extended hand — go slower and shorten the hold until the added load feels controlled", regression_id:"bird_dog", progression_id:null, cues:["[beginner] Hold a 5 kg dumbbell in the extending hand","[beginner] The weight will immediately pull your torso into rotation — resist it","[beginner] Shorten the hold if the hips rotate at all","[intermediate] The dumbbell in the hand creates a rotational pull that the obliques must resist","[intermediate] Keep the same perfect form as the unweighted version — the weight should not change your mechanics","[intermediate] Film yourself from behind to check hip level during the hold","[advanced] Dumbbell in hand plus weight strapped to ankle creates a full-body anti-rotation challenge","[advanced] This level of bird-dog is a serious core stability exercise regardless of the load used","[advanced] Pair with hollow body work in the same session for complete anterior and posterior core training"], common_mistakes:["Allowing the dumbbell to pull the torso into rotation","Compensating by reducing range of motion instead of controlling the load","Losing hip level during the weighted hold"], tutorial_url:"https://www.youtube.com/watch?v=wiFNA3sqjCA", notes:"Same tutorial as standard bird-dog." },
+  side_plank: { id:"side_plank", name:"Side Plank", movement_pattern:"core", equipment_required:[], difficulty:2, class_affinity:["warrior","tank","assassin","mage","ranger"], muscles_primary:["obliques","quadratus lumborum — anti-lateral-flexion"], muscles_secondary:["gluteus medius","shoulder stabilizers","adductors"], sets_default:3, reps_min:30, reps_max:45, rep_mode:"timed", is_unilateral:true, duration_seconds:45, tempo_code:null, tempo_note:"Hold the position for as long as you can keep your hips up — drop to your knee if needed to maintain a straight body line", regression_id:null, progression_id:"side_plank_raised", cues:["[beginner] Lie on your side, elbow directly under your shoulder","[beginner] Lift your hips off the floor — body in a straight line from head to feet","[beginner] If this is too hard, bend your knees and balance on your knee instead of your feet","[intermediate] Stack feet on top of each other or stagger them for stability","[intermediate] Top arm can rest on your hip or extend toward the ceiling","[intermediate] Keep hips square — don't let the top hip rotate forward","[advanced] Add hip dips — lower hip toward floor and raise back up for 10–12 reps instead of a static hold","[advanced] Raise top leg for additional gluteus medius demand","[advanced] Left-right asymmetry in side plank duration is a direct predictor of lower back injury risk — address it"], common_mistakes:["Hips sagging toward the floor","Rotating forward so the body is no longer in a true side position","Elbow not directly under the shoulder causing unstable base"], tutorial_url:"https://www.youtube.com/watch?v=_rdfjFSFKMY", notes:"Primary anti-lateral-flexion exercise." },
+  side_plank_raised: { id:"side_plank_raised", name:"Side Plank — Feet Raised", movement_pattern:"core", equipment_required:["chair"], difficulty:4, class_affinity:["warrior","assassin"], muscles_primary:["obliques","quadratus lumborum"], muscles_secondary:["gluteus medius","shoulder stabilizers"], sets_default:3, reps_min:30, reps_max:45, rep_mode:"timed", is_unilateral:true, duration_seconds:45, tempo_code:null, tempo_note:"Place feet on a chair, elbow on the floor — the elevated feet increase the lever arm significantly; expect duration to drop by 30–40% initially", regression_id:"side_plank", progression_id:null, cues:["[beginner] Master the standard side plank first — this is a significant difficulty jump","[intermediate] Place feet on a chair, elbow on the floor — the elevated feet increase the anti-lateral-flexion demand substantially","[intermediate] Everything else is identical to the standard side plank","[intermediate] Expect your duration to drop significantly at first — that's normal","[advanced] Add hip dips — lower hip toward floor and raise back up while feet remain elevated","[advanced] This is the ceiling of side plank progression with available equipment","[advanced] Symmetry between sides remains the priority even at this level"], common_mistakes:["Progressing to elevated version before standard side plank is genuinely controlled","Hips rotating forward as fatigue sets in","Elbow positioning becoming sloppy under the increased load"], tutorial_url:"https://www.youtube.com/watch?v=_rdfjFSFKMY", notes:"Ceiling of anti-lateral-flexion progression." },
+  turkish_getup: { id:"turkish_getup", name:"Turkish Get-Up", movement_pattern:"core", equipment_required:["dumbbells"], difficulty:5, class_affinity:["warrior","tank","assassin"], muscles_primary:["core — all planes","shoulder stabilizers","glutes"], muscles_secondary:["hip flexors","triceps","quadriceps","thoracic rotation"], sets_default:3, reps_min:2, reps_max:3, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:null, tempo_note:"There is no tempo — each transition is as slow as needed to maintain control. Never rush a get-up", regression_id:"hollow_body_hold", progression_id:null, cues:["[beginner] Start lying on your back, dumbbell pressed overhead in one hand, same-side knee bent","[beginner] Roll to your elbow, then to your hand, then sweep the straight leg through to a lunge position, then stand","[beginner] Reverse the sequence to get back down — every step is deliberate and slow","[intermediate] Eyes on the dumbbell throughout — this keeps the shoulder packed and the wrist straight","[intermediate] The get-up has 6 distinct positions — own each one before moving to the next","[intermediate] The half-kneeling to standing transition is where most people lose shoulder position — brace before you stand","[advanced] At 5 kg this is a skill and stability exercise — the load is almost irrelevant","[advanced] Perfect get-ups build a level of full-body integration nothing else in this library replicates","[advanced] Use as a diagnostic — any breakdown in the sequence reveals a specific mobility or stability deficit worth addressing"], common_mistakes:["Rushing through transitions and losing the overhead position","Eyes leaving the dumbbell during the movement","Bending the elbow of the working arm at any point"], tutorial_url:"https://www.youtube.com/watch?v=0bWRPC49-KI", notes:"The most complex movement in the entire library." },
+  // CORE — GYM
+  cable_pallof_press: { id:"cable_pallof_press", name:"Cable Pallof Press", movement_pattern:"core", equipment_required:["cable_machine"], difficulty:2, class_affinity:["warrior","tank","mage","ranger"], muscles_primary:["core — anti-rotation","obliques","transverse abdominis"], muscles_secondary:["anterior deltoid","triceps","glutes"], sets_default:3, reps_min:10, reps_max:12, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"2-2-2-0", tempo_note:"Press straight out, hold for 2 seconds resisting the rotational pull, bring back in — the cable's constant pull is what makes this superior to the dumbbell version", regression_id:"pallof_pressout", progression_id:"ab_wheel_rollout", cues:["[beginner] Set cable at chest height, stand side-on to the machine, hands holding the handle at your chest","[beginner] Press the handle straight out in front of you — resist any rotation toward the cable","[beginner] The cable pulls you toward the machine the entire time — your core resists this","[intermediate] The constant rotational load from the cable is what separates this from the dumbbell version","[intermediate] Keep your feet hip-width, knees slightly bent, hips square","[intermediate] Breathe out as you press, hold at extension, breathe in as you return","[advanced] Step further from the machine to increase the rotational demand","[advanced] The standing position challenges hip stability simultaneously with core anti-rotation","[advanced] This is one of the best exercises for training the obliques in their actual function — resisting rotation, not creating it"], common_mistakes:["Rotating toward the cable during the press — the entire point is to resist this","Standing too close to the machine and reducing the anti-rotation demand","Using a weight that causes compensatory stance shifts"], tutorial_url:"https://www.youtube.com/watch?v=AH_QZLm_0-s", notes:"The cable provides constant tension that the dumbbell version can't replicate." },
+  ab_wheel_rollout: { id:"ab_wheel_rollout", name:"Ab Wheel Rollout", movement_pattern:"core", equipment_required:["cable_machine"], difficulty:4, class_affinity:["warrior","assassin","tank"], muscles_primary:["core — anti-extension","transverse abdominis","rectus abdominis"], muscles_secondary:["latissimus dorsi","shoulder stabilizers","hip flexors"], sets_default:3, reps_min:8, reps_max:10, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:"3-1-2-0", tempo_note:"Roll out slowly for 3 seconds, hold for 1 second at the extended position, roll back in for 2 seconds — lower back must stay neutral throughout", regression_id:"hollow_body_hold", progression_id:null, cues:["[beginner] Start from your knees — full rollouts from standing are for later","[beginner] Roll forward only as far as you can while keeping your lower back neutral — this is much less than you think","[beginner] Pull yourself back in by engaging your core, not by using your arms to push","[intermediate] The limiting factor is anti-extension core strength — your lower back will want to hyperextend as you roll out","[intermediate] Think about the hollow body position — ribs down, slight posterior pelvic tilt — throughout the roll","[intermediate] From knees, a full rollout means your arms are almost fully extended in front of you","[advanced] Full rollout from standing is an elite core strength expression","[advanced] The eccentric (rolling out) is the primary stimulus — control it completely","[advanced] If the lower back sags or hyperextends at any point, that's your stopping distance — not the floor"], common_mistakes:["Rolling out further than core strength allows and compensating with lower back extension — injury risk","Using the arms to push back instead of the core to pull back","Going too fast and losing the anti-extension position"], tutorial_url:"https://www.youtube.com/watch?v=Xyd_fa5zoEU", notes:"One of the most effective anti-extension core exercises available. Start from knees." },
+
+  // ROTATION
+  thoracic_rotation_quadruped: { id:"thoracic_rotation_quadruped", name:"Thoracic Rotation — Quadruped", movement_pattern:"rotation", equipment_required:[], difficulty:1, class_affinity:["warrior","tank","assassin","mage","ranger"], muscles_primary:["thoracic extensors","rotator cuff","obliques"], muscles_secondary:["rhomboids","serratus anterior","cervical stabilizers"], sets_default:3, reps_min:10, reps_max:10, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"2-2-2-0", tempo_note:"Place one hand behind your head, rotate your elbow toward the ceiling slowly — follow it with your eyes. Hold for 2 seconds at the top", regression_id:null, progression_id:"side_lying_rotation", cues:["[beginner] Start on all fours — hands under shoulders, knees under hips","[beginner] Place one hand behind your head, elbow pointing out to the side","[beginner] Rotate that elbow up toward the ceiling as far as comfortable, hold briefly, return","[intermediate] The rotation should come entirely from the thoracic spine — above the lower back","[intermediate] Lock the lower back by keeping your hips completely still throughout","[intermediate] Exhale as you rotate up — the exhale releases the ribcage and allows more range","[advanced] Maximum range is where your elbow points directly at the ceiling","[advanced] Any hip movement means lumbar spine is compensating — reduce range and own the thoracic rotation first","[advanced] Left-right asymmetry in range is common and worth noting — the stiffer side needs more attention"], common_mistakes:["Hips rotating instead of thoracic spine — this means the lumbar spine is doing the work","Not following the elbow with the eyes — the cervical spine should rotate with the thoracic","Rushing through reps without the hold at the top"], tutorial_url:"https://www.youtube.com/watch?v=kF_wMJUQnmU", notes:"Non-negotiable prerequisite for all loaded rotation work." },
+  side_lying_rotation: { id:"side_lying_rotation", name:"Side-Lying Thoracic Rotation", movement_pattern:"rotation", equipment_required:[], difficulty:2, class_affinity:["warrior","tank","mage","ranger"], muscles_primary:["thoracic extensors","obliques","rotator cuff"], muscles_secondary:["pectoralis major — stretched","rhomboids","serratus anterior"], sets_default:3, reps_min:10, reps_max:10, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"2-3-2-0", tempo_note:"Lie on your side with knees stacked and bent, top arm sweeps open toward the floor behind you slowly — let gravity do some of the work", regression_id:"thoracic_rotation_quadruped", progression_id:"rotation_standing_dumbbell", cues:["[beginner] Lie on your side, hips and knees bent at 90 degrees, knees stacked on top of each other","[beginner] Both arms extended in front of you at shoulder height","[beginner] Sweep the top arm slowly in an arc overhead and toward the floor behind you — follow it with your eyes and head","[intermediate] Keep the knees stacked and still — they want to fall apart as the upper body rotates","[intermediate] The goal is for the back of your top hand to touch the floor behind you","[intermediate] Breathe into the rotation — inhale as you open, hold at end range, exhale as you return","[advanced] If your knees separate during the movement, place a foam roller or rolled towel between them","[advanced] End range hold is where the thoracic capsule actually changes — don't skip it","[advanced] Both sides should reach similar range — address the stiffer side with extra volume"], common_mistakes:["Knees separating and hips rotating to allow more apparent range of motion","Not holding at end range — the movement loses most of its value without the hold","Moving too fast and using momentum instead of true thoracic mobility"], tutorial_url:"https://www.youtube.com/watch?v=LqPNGJiV8_8", notes:"Better thoracic rotation stimulus than the quadruped version." },
+  rotation_standing_dumbbell: { id:"rotation_standing_dumbbell", name:"Standing Rotation — Dumbbell", movement_pattern:"rotation", equipment_required:["dumbbells"], difficulty:2, class_affinity:["warrior","tank","assassin","ranger"], muscles_primary:["obliques","thoracic rotators","hip rotators"], muscles_secondary:["glutes","anterior deltoid","core"], sets_default:3, reps_min:10, reps_max:10, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"2-1-2-0", tempo_note:"Hold the dumbbell with both hands, rotate your torso to one side slowly — let your back heel lift naturally. Return to center with control", regression_id:"side_lying_rotation", progression_id:"rotation_dumbbell_chop", cues:["[beginner] Stand with feet hip-width apart, hold one dumbbell with both hands at chest height","[beginner] Rotate your entire torso to one side — shoulders, chest, and the dumbbell all move together","[beginner] Let your back heel rise naturally as you rotate — this allows full hip and thoracic rotation","[intermediate] The rotation should come from the hips and thoracic spine together — not just the arms swinging","[intermediate] Keep the dumbbell at the same height throughout — don't let it drop as you rotate","[intermediate] The return to center is active — don't unwind passively","[advanced] Think of throwing a punch in slow motion — the power comes from the hip drive and thoracic rotation, not the arms","[advanced] Decelerate the return actively — this eccentric oblique load is the primary training stimulus","[advanced] Progress to the chop pattern when this feels completely controlled"], common_mistakes:["Rotating only the arms and shoulders while the hips stay square","Back heel staying fixed — limits thoracic and hip rotation range","Unwinding passively on the return instead of controlling the deceleration"], tutorial_url:"https://www.youtube.com/watch?v=0M8TlbLsHJY", notes:"First loaded rotation exercise." },
+  rotation_dumbbell_chop: { id:"rotation_dumbbell_chop", name:"Dumbbell Chop", movement_pattern:"rotation", equipment_required:["dumbbells"], difficulty:3, class_affinity:["warrior","assassin","ranger"], muscles_primary:["obliques","thoracic rotators","hip rotators","anterior deltoid"], muscles_secondary:["glutes","core — anti-rotation on deceleration","latissimus dorsi"], sets_default:3, reps_min:8, reps_max:8, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"2-1-2-0", tempo_note:"Hold the dumbbell with both hands, bring it from high on one side down to the opposite hip diagonally — like chopping wood. Control the return", regression_id:"rotation_standing_dumbbell", progression_id:null, cues:["[beginner] Hold one dumbbell with both hands above one shoulder","[beginner] Chop diagonally down and across your body toward the opposite hip","[beginner] Let your back heel rise and hips rotate — this is a full body rotation pattern","[intermediate] The power comes from the hips rotating — the arms just hold the dumbbell","[intermediate] Think of the pattern as a diagonal hip drive, not an arm swing","[intermediate] Control the return — don't let the dumbbell pull you back passively","[advanced] The deceleration at the bottom is the primary oblique stimulus — actively brake the movement","[advanced] Low-to-high chop is the reverse pattern — alternate between high-to-low and low-to-high across sessions","[advanced] At 5 kg this is a skill and conditioning tool — intent and control are the variables, not load"], common_mistakes:["Arms doing all the work while hips stay square","Losing control at the bottom of the chop — passive deceleration loses the training stimulus","Chopping straight down instead of on a true diagonal"], tutorial_url:"https://www.youtube.com/watch?v=pAplQXk3dkU", notes:"Diagonal chop pattern trains the oblique sling system." },
+  pallof_press_rotation: { id:"pallof_press_rotation", name:"Pallof Press with Rotation", movement_pattern:"rotation", equipment_required:["dumbbells"], difficulty:3, class_affinity:["warrior","tank","ranger"], muscles_primary:["obliques","transverse abdominis","thoracic rotators"], muscles_secondary:["anterior deltoid","triceps","quadratus lumborum"], sets_default:3, reps_min:8, reps_max:8, rep_mode:"per_side", is_unilateral:true, duration_seconds:null, tempo_code:"2-2-2-0", tempo_note:"Press the dumbbell out, hold for 2 seconds resisting rotation, then slowly rotate toward your hip and back — two separate phases, don't rush either", regression_id:"pallof_pressout", progression_id:null, cues:["[beginner] Half-kneeling position, hold a 5 kg dumbbell at your chest with both hands","[beginner] Press the dumbbell straight out and resist any torso rotation — this is the anti-rotation phase","[beginner] Then rotate the dumbbell slowly toward your hip and back — this is the controlled rotation phase","[intermediate] The two phases train opposing qualities — first resist rotation, then produce it","[intermediate] Keep hips square during the press phase — only the upper body rotates in the rotation phase","[intermediate] Exhale into the rotation to access more range","[advanced] The rotation phase should be slow and controlled — the obliques are decelerating the movement","[advanced] Standing position increases the hip stability demand compared to half-kneeling","[advanced] This exercise sits at the intersection of anti-rotation and rotation training — it trains both in a single movement"], common_mistakes:["Rotating during the press phase — the press should be completely anti-rotational","Rushing the rotation phase and losing oblique control","Hips rotating along with the upper body during the rotation phase"], tutorial_url:"https://www.youtube.com/watch?v=AH_QZLm_0-s", notes:"The most complete single rotation exercise in the library." },
+  // CARDIO
+  zone2_walk: { id:"zone2_walk", name:"Zone 2 — Brisk Walk", movement_pattern:"cardio", equipment_required:[], difficulty:1, class_affinity:["warrior","tank","assassin","mage","ranger"], muscles_primary:["cardiovascular system","glutes","quadriceps"], muscles_secondary:["calves","core","hip flexors"], sets_default:1, reps_min:45, reps_max:60, rep_mode:"timed", is_unilateral:false, duration_seconds:2700, tempo_code:null, tempo_note:"Walk at a pace where you can hold a conversation but feel like you're moving with purpose — not a stroll, not a race", regression_id:null, progression_id:"zone2_run", cues:["[beginner] Walk at a brisk pace — faster than a casual stroll but not breathless","[beginner] Swing your arms naturally — don't let them hang still at your sides","[beginner] The talk test — you should be able to speak in full sentences without gasping","[intermediate] Nose breathing is the Zone 2 indicator — mouth breathing means you've crossed into Zone 3","[intermediate] Heart rate target is roughly 60–70% of your maximum — for most people that's 120–140 bpm","[intermediate] Varied terrain adds stimulus without increasing intensity — hills, grass, and uneven ground all count","[advanced] Zone 2 builds mitochondrial density in slow-twitch muscle fibers — this is the aerobic foundation everything else sits on","[advanced] Consistency matters more than any single session — 3–4 hours of Zone 2 per week is the research-backed target for longevity","[advanced] Add a loaded ruck to convert this into a simultaneous structural and cardiovascular session"], common_mistakes:["Walking too slowly and not reaching Zone 2 heart rate","Walking too fast and drifting into Zone 3 — this defeats the mitochondrial adaptation purpose","Inconsistent sessions — Zone 2 adaptation requires regular weekly volume not occasional long walks"], tutorial_url:"https://www.youtube.com/watch?v=BI79TPUJROI", notes:"The most accessible longevity exercise." },
+  zone2_run: { id:"zone2_run", name:"Zone 2 — Run", movement_pattern:"cardio", equipment_required:[], difficulty:2, class_affinity:["warrior","assassin","ranger"], muscles_primary:["cardiovascular system","quadriceps","hamstrings","glutes"], muscles_secondary:["calves","core","hip flexors"], sets_default:1, reps_min:30, reps_max:60, rep_mode:"timed", is_unilateral:false, duration_seconds:1800, tempo_code:null, tempo_note:"Run at a pace where nose breathing is possible — this will feel embarrassingly slow at first. That's correct", regression_id:"zone2_walk", progression_id:"hill_repeats", cues:["[beginner] Run slower than you think you need to — Zone 2 running pace is often a shuffle for beginners","[beginner] If you can't nose breathe, walk until your heart rate drops then resume running","[beginner] Run-walk intervals are completely valid — the zone matters, not continuous running","[intermediate] The nose breathing constraint is your intensity governor — trust it over pace or heart rate monitors","[intermediate] Land with your foot under your center of mass — not out in front of you","[intermediate] Relax your shoulders and hands — tension anywhere in the upper body increases oxygen cost","[advanced] At true Zone 2 pace you should be able to hold a conversation and feel like you could continue indefinitely","[advanced] Build weekly volume before increasing pace — duration adaptation precedes intensity adaptation","[advanced] Zone 2 running and Zone 2 walking produce similar mitochondrial adaptations — the difference is caloric cost and joint load"], common_mistakes:["Running too fast and spending the session in Zone 3 or 4","Ignoring the nose breathing signal and pushing through mouth breathing","Inconsistent weekly volume — Zone 2 adaptations require regular stimulus not occasional long runs"], tutorial_url:"https://www.youtube.com/watch?v=BI79TPUJROI", notes:"Zone 2 running pace is often humblingly slow." },
+  hill_repeats: { id:"hill_repeats", name:"Hill Repeats", movement_pattern:"cardio", equipment_required:[], difficulty:3, class_affinity:["warrior","assassin","ranger"], muscles_primary:["cardiovascular system","glutes","quadriceps","calves"], muscles_secondary:["hamstrings","core","hip flexors"], sets_default:4, reps_min:4, reps_max:4, rep_mode:"timed", is_unilateral:false, duration_seconds:240, tempo_code:null, tempo_note:"4 min hard uphill, 3 min walk down recovery. 4 rounds.", regression_id:"zone2_run", progression_id:"vo2max_intervals", cues:["[beginner] Find any hill with a 4-minute climb — steeper is better than longer","[beginner] Run uphill at a hard effort — not a sprint, but uncomfortable","[beginner] Walk back down — this is your recovery, not additional training","[intermediate] The 4-minute duration at 85–90% HRmax is the specific stimulus for VO2 max adaptation","[intermediate] Each repeat should feel equally hard — if the 4th feels easy you didn't go hard enough on the first","[intermediate] Heart rate will continue rising during the 4 minutes — start slightly below target and let it climb","[advanced] Hill repeats are preferable to flat intervals for most people — the incline reduces impact forces while increasing cardiovascular demand","[advanced] The forced walk recovery on the descent is ideal active recovery pacing","[advanced] 4 rounds is the minimum effective dose — 5 or 6 rounds as fitness improves"], common_mistakes:["Going too hard too early and dying on the 3rd repeat","Cutting recovery short — incomplete recovery means subsequent repeats are Zone 3 not Zone 4-5","Running downhill too fast and accumulating unnecessary joint load"], tutorial_url:"https://www.youtube.com/watch?v=4jl9stFNHoQ", notes:"Hill repeats are the most joint-friendly way to train VO2 max." },
+  vo2max_intervals: { id:"vo2max_intervals", name:"VO2 Max Intervals — Flat", movement_pattern:"cardio", equipment_required:[], difficulty:4, class_affinity:["warrior","assassin","ranger"], muscles_primary:["cardiovascular system","quadriceps","hamstrings","glutes"], muscles_secondary:["core","calves","hip flexors"], sets_default:4, reps_min:4, reps_max:4, rep_mode:"timed", is_unilateral:false, duration_seconds:240, tempo_code:null, tempo_note:"4 min hard at 85–90% HRmax, 3 min active recovery. 4 rounds.", regression_id:"hill_repeats", progression_id:"stair_sprints", cues:["[beginner] Build Zone 2 base first — at least 4 weeks of consistent Zone 2 before adding intervals","[beginner] Start with hill repeats rather than flat intervals — lower impact for the same cardiovascular stimulus","[intermediate] The 4×4 protocol comes from Norwegian research and is the most replicated VO2 max protocol in the literature","[intermediate] Effort should be genuinely hard — not a jog, not a sprint, but a sustained hard run","[intermediate] Active recovery between rounds — walk or very slow jog, not sitting down","[advanced] VO2 max is one of the strongest single predictors of all-cause mortality — this session is non-negotiable in the program","[advanced] Heart rate should reach 85–90% of maximum during each interval — track it if possible","[advanced] One session per week is sufficient — more than two sessions per week without adequate Zone 2 base is counterproductive"], common_mistakes:["Starting too fast on the first interval and fading badly on intervals 3 and 4","Passive recovery — sitting down between rounds blunts the cardiovascular adaptation","Doing this session too frequently without Zone 2 base — produces fatigue not adaptation"], tutorial_url:"https://www.youtube.com/watch?v=4jl9stFNHoQ", notes:"The 4×4 protocol is the most evidence-backed VO2 max training method." },
+  stair_sprints: { id:"stair_sprints", name:"Stair Sprints", movement_pattern:"cardio", equipment_required:[], difficulty:4, class_affinity:["warrior","assassin","ranger"], muscles_primary:["cardiovascular system","quadriceps","glutes","calves"], muscles_secondary:["hamstrings","core","hip flexors"], sets_default:6, reps_min:20, reps_max:30, rep_mode:"timed", is_unilateral:false, duration_seconds:30, tempo_code:null, tempo_note:"Sprint up the stairs as fast as safely possible for 20–30 seconds. Walk back down completely before the next round.", regression_id:"hill_repeats", progression_id:null, cues:["[beginner] Find any staircase — apartment building, outdoor stairs, stadium steps","[beginner] Sprint up as fast as safely possible, taking steps one or two at a time","[beginner] Walk all the way back down — the descent is recovery not additional training","[intermediate] Drive your knees up aggressively — stair sprinting is a high-knee running pattern","[intermediate] Arms drive hard — opposite arm to opposite leg, full range","[intermediate] Land on the balls of your feet — not flat-footed","[advanced] Stair sprints produce alactic and lactic power adaptations simultaneously","[advanced] The impact forces going up are lower than flat sprinting — joints are safer at maximum effort","[advanced] Use as a substitute for flat intervals when a track or open space isn't available"], common_mistakes:["Not going at maximum effort — stair sprints are only effective at true high intensity","Running back down the stairs — impact forces descending at speed are significant and unnecessary","Insufficient recovery between rounds — incomplete recovery means later rounds are submaximal"], tutorial_url:"https://www.youtube.com/watch?v=TWGLkJScBiI", notes:"The most accessible maximum-intensity training tool." },
+  jump_rope_shadow: { id:"jump_rope_shadow", name:"Jump Rope — Shadow (No Rope)", movement_pattern:"cardio", equipment_required:[], difficulty:1, class_affinity:["warrior","assassin","ranger","mage"], muscles_primary:["cardiovascular system","calves","coordination"], muscles_secondary:["core","shoulders","hip flexors"], sets_default:3, reps_min:3, reps_max:3, rep_mode:"timed", is_unilateral:false, duration_seconds:180, tempo_code:null, tempo_note:"Bounce lightly on the balls of your feet, wrists rotating as if turning a rope — find a rhythm and keep it. 3 minutes continuous is the target", regression_id:null, progression_id:"zone2_walk", cues:["[beginner] Stand tall, bounce lightly on the balls of your feet","[beginner] Rotate your wrists in small circles as if turning a rope — arms relaxed at your sides","[beginner] Find a rhythm — the bounce should be consistent and light, not heavy or flat-footed","[intermediate] Minimal ground contact time — think light and quick, not high and slow","[intermediate] Keep the bounce small — you only need to clear an imaginary rope","[intermediate] Breathe rhythmically — one breath cycle per two bounces is a natural rhythm","[advanced] Vary the rhythm — alternating feet, side to side, high knees — to increase coordination and cardiovascular demand","[advanced] 3 min rounds of shadow rope are a complete warm-up for any session","[advanced] The coordination and rhythm training has transfer to agility and movement quality across all classes"], common_mistakes:["Jumping too high — wastes energy and increases joint impact","Arms too wide — wrists should rotate close to the hips","Losing rhythm and stopping — slow down rather than stopping if rhythm breaks"], tutorial_url:"https://www.youtube.com/watch?v=FJmRQ5iTXKE", notes:"No equipment needed." },
+  pogo_jumps: { id:"pogo_jumps", name:"Pogo Jumps", movement_pattern:"cardio", equipment_required:[], difficulty:2, class_affinity:["warrior","assassin","ranger"], muscles_primary:["calves","achilles tendon","cardiovascular system"], muscles_secondary:["quadriceps","glutes","core"], sets_default:3, reps_min:20, reps_max:30, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:null, tempo_note:"Small quick bounces on the balls of your feet — the goal is minimal ground contact time, not height. Think of your legs as springs", regression_id:"jump_rope_shadow", progression_id:"broad_jump", cues:["[beginner] Stand tall, bounce on the balls of your feet with ankles stiff","[beginner] Keep ground contact time as short as possible — land and immediately bounce","[beginner] Arms can assist — swing them upward on each jump","[intermediate] Stiff ankles are the key — the achilles tendon acts as a spring only when the ankle is stiff on landing","[intermediate] Think of it as bouncing on a pogo stick — the ankle is the spring, not the knee","[intermediate] Consistent height across all reps — don't fade on the last 10","[advanced] Pogo jumps train reactive strength — the ability to absorb and immediately redirect ground forces","[advanced] This is the foundation of all jumping and sprinting power","[advanced] Progress to single-leg pogo jumps for increased demand and asymmetry detection"], common_mistakes:["Bending the knees too much and turning it into a squat jump — loses the reactive stimulus","Landing flat-footed instead of on the balls of the feet","Long ground contact time — the bounce should be immediate not delayed"], tutorial_url:"https://www.youtube.com/watch?v=5GNM6MQfVYQ", notes:"Trains achilles tendon and reactive strength." },
+  broad_jump: { id:"broad_jump", name:"Broad Jump", movement_pattern:"cardio", equipment_required:[], difficulty:3, class_affinity:["warrior","assassin","ranger"], muscles_primary:["glutes","quadriceps","hamstrings — explosive"], muscles_secondary:["calves","core","hip flexors"], sets_default:4, reps_min:3, reps_max:4, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:null, tempo_note:"Swing your arms back, bend your knees, then explode forward as far as possible — land softly with bent knees and absorb the landing", regression_id:"pogo_jumps", progression_id:"box_jump", cues:["[beginner] Stand with feet hip-width apart","[beginner] Swing arms back and bend knees simultaneously — load the hips like a spring","[beginner] Explode forward and upward — drive arms forward as you jump","[beginner] Land softly with knees bent — absorb the landing through your hips and knees","[intermediate] The arm swing generates roughly 10–15% of jump distance — use it fully","[intermediate] Think triple extension — ankle, knee, and hip all extend simultaneously at takeoff","[intermediate] Stick the landing for 2 seconds before resetting — this trains deceleration","[advanced] Max intent means treating each jump as if it's a competition — no casual broad jumps","[advanced] Track your distance over time — broad jump distance is a reliable power output metric","[advanced] Rest fully between sets — power output drops rapidly with fatigue and submaximal power training defeats the purpose"], common_mistakes:["Submaximal effort — broad jumps are only effective at maximum intent","Landing stiff-legged — significant injury risk and loses the deceleration training stimulus","Not resetting fully between jumps — rushing into the next jump with residual fatigue"], tutorial_url:"https://www.youtube.com/watch?v=4qNSHnDFJmI", notes:"Horizontal power output." },
+  box_jump: { id:"box_jump", name:"Box Jump (onto Chair)", movement_pattern:"cardio", equipment_required:["chair"], difficulty:4, class_affinity:["warrior","assassin","ranger"], muscles_primary:["glutes","quadriceps","hamstrings — explosive"], muscles_secondary:["calves","core","hip flexors"], sets_default:4, reps_min:3, reps_max:4, rep_mode:"total", is_unilateral:false, duration_seconds:null, tempo_code:null, tempo_note:"Jump onto the chair with both feet simultaneously, land softly, then step back down — never jump down", regression_id:"broad_jump", progression_id:null, cues:["[beginner] Use a stable chair pushed against a wall — safety is non-negotiable here","[beginner] Swing arms and bend knees to load the jump","[beginner] Land softly on the chair with both feet — hips and knees absorbing the landing","[beginner] Step down one foot at a time — never jump down","[intermediate] The chair height is fixed — increase intent and landing quality rather than chasing height","[intermediate] A quiet landing is a good landing — loud means stiff joints not absorbing force","[intermediate] Full hip extension at the top — stand tall on the chair before stepping down","[advanced] Max intent on every rep — power training requires maximum neuromuscular recruitment","[advanced] Rest fully between sets — 60–90 sec minimum — power output is the stimulus not fatigue","[advanced] Track landing quality over time — improving from loud to quiet landings is a measurable adaptation"], common_mistakes:["Jumping down off the chair — Achilles and knee injury risk","Using an unstable chair — non-negotiable safety issue","Submaximal effort — the adaptation comes from maximum intent not volume"], tutorial_url:"https://www.youtube.com/watch?v=52lE3aIwGAI", notes:"Vertical power output. Ceiling of power progression." },
+};
+
+
+
+// ============================================================
+// 2. ADAPTATION CODE
+// ============================================================
+
+const CLASS_DEFINITIONS = {
+  warrior: {
+    label: "Warrior",
+    preferred_patterns: ["squat", "hinge", "pull", "push", "carry", "core", "cardio"],
+    pattern_weights:    [2,       2,       2,     2,     1,       1,     2      ],
+    max_difficulty: 5,
+    bonus_sets: 0,
+    progression_speed: "normal",
+    primary_metric: "reps",
+    affinity_required: false,
+  },
+  tank: {
+    label: "Tank",
+    preferred_patterns: ["squat", "hinge", "carry", "core", "cardio"],
+    pattern_weights:    [3,       2,       3,       2,      1      ],
+    max_difficulty: 5,
+    bonus_sets: 1,
+    progression_speed: "slow",
+    primary_metric: "reps",
+    affinity_required: false,
+  },
+  assassin: {
+    label: "Assassin",
+    preferred_patterns: ["push", "pull", "hinge", "cardio", "core"],
+    pattern_weights:    [3,      3,      2,       3,        1     ],
+    max_difficulty: 5,
+    bonus_sets: 0,
+    progression_speed: "fast",
+    primary_metric: "reps",
+    affinity_required: false,
+  },
+  mage: {
+    label: "Mage",
+    preferred_patterns: ["rotation", "core", "cardio", "push", "pull"],
+    pattern_weights:    [3,          2,      3,        1,      1     ],
+    max_difficulty: 3,
+    bonus_sets: 0,
+    progression_speed: "slow",
+    primary_metric: "duration",
+    affinity_required: false,
+  },
+  ranger: {
+    label: "Ranger",
+    preferred_patterns: ["cardio", "hinge", "pull", "core", "carry"],
+    pattern_weights:    [4,        2,       1,      1,      2      ],
+    max_difficulty: 4,
+    bonus_sets: 0,
+    progression_speed: "normal",
+    primary_metric: "distance",
+    affinity_required: false,
+  },
+};
+
+const SYSTEM_VOICE = {
+  session_open: {
+    first_ever: "A new hunter has been detected. Calibration sequence initiated.",
+    returning: "The System has reviewed your performance. Your next trial awaits.",
+    after_rest_day: "Rest acknowledged. The System expects more from you today.",
+    deload_week: "The System has detected accumulated fatigue. A recovery week has been assigned. This is not weakness — this is strategy.",
+    scheduled_rest: "Rest day confirmed by protocol. Recovery is part of the trial.",
+  },
+  adaptation: {
+    progressed_exercise: (fromName, toName) =>
+      `[PROGRESSION] ${fromName} → ${toName}. You have outgrown this trial.`,
+    regressed_exercise: (fromName, toName) =>
+      `[REGRESSION] ${fromName} → ${toName}. Foundations must be rebuilt.`,
+    reps_increased: (exercise, newReps) =>
+      `[LOAD INCREASED] ${exercise}: ${newReps} reps. The System demands more.`,
+    reps_decreased: (exercise, newReps) =>
+      `[LOAD REDUCED] ${exercise}: ${newReps} reps. Rebuild foundations.`,
+    sets_increased: (exercise, newSets) =>
+      `[VOLUME INCREASED] ${exercise}: ${newSets} sets.`,
+    sets_decreased: (exercise, newSets) =>
+      `[VOLUME REDUCED] ${exercise}: ${newSets} sets.`,
+    max_reached: (exercise) =>
+      `[CEILING REACHED] ${exercise} mastered at current equipment. Seeking new challenge.`,
+    pattern_gap: (pattern) =>
+      `[SYSTEM OVERRIDE] ${pattern.toUpperCase()} pattern deficit detected. Today's trial has been adjusted.`,
+    exercise_rotated: (oldName, newName) =>
+      `[ROTATION] ${oldName} → ${newName}. The System introduces a new challenge.`,
+    timed_progressed: (exercise, newDuration) =>
+      `[DURATION INCREASED] ${exercise}: ${newDuration} seconds. Hold longer.`,
+    timed_regressed: (exercise, newDuration) =>
+      `[DURATION REDUCED] ${exercise}: ${newDuration} seconds. Control is paramount.`,
+    distance_increased: (exercise, newDist) =>
+      `[DISTANCE INCREASED] ${exercise}: ${newDist}m. Cover more ground.`,
+    distance_decreased: (exercise, newDist) =>
+      `[DISTANCE REDUCED] ${exercise}: ${newDist}m. Pace yourself.`,
+  },
+  milestones: {
+    streak_3:  "3-day streak detected. The System is watching.",
+    streak_7:  "7 days without breaking. The System acknowledges your discipline.",
+    streak_14: "14-day streak. You are no longer a beginner.",
+    streak_30: "30 days. Most hunters quit before this point. You did not.",
+    first_progression: "First exercise progression achieved. The path is opening.",
+  },
+};
+
+function userCanPerform(exercise, userEquipment) {
+  if (!exercise.equipment_required || exercise.equipment_required.length === 0) return true;
+  return exercise.equipment_required.every(item => userEquipment.includes(item));
+}
+
+function exerciseMatchesClassAffinity(exercise, userClass) {
+  const classDef = CLASS_DEFINITIONS[userClass];
+  if (!classDef) return false;
+  if (classDef.affinity_required) {
+    return exercise.class_affinity && exercise.class_affinity.includes(userClass);
+  }
+  if (!exercise.class_affinity || exercise.class_affinity.length === 0) return true;
+  return exercise.class_affinity.includes(userClass);
+}
+
+function filterCuesByExperience(cues, experience) {
+  if (!cues) return [];
+  return cues
+    .filter(cue => cue.startsWith(`[${experience}]`))
+    .map(cue => cue.replace(`[${experience}] `, ""));
+}
+
+function getRandomItem(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function getUnderrepresentedPattern(sessionHistory, userClass) {
+  const classDef = CLASS_DEFINITIONS[userClass];
+  const recentPatterns = sessionHistory.slice(-7).flatMap(s => s.patterns_used || []);
+  const patternCounts = {};
+  classDef.preferred_patterns.forEach(p => { patternCounts[p] = recentPatterns.filter(r => r === p).length; });
+  let mostNeeded = null;
+  let lowestScore = Infinity;
+  classDef.preferred_patterns.forEach((pattern, i) => {
+    const weight = classDef.pattern_weights[i];
+    const count = patternCounts[pattern] || 0;
+    const score = count / weight;
+    if (score < lowestScore) { lowestScore = score; mostNeeded = pattern; }
+  });
+  return mostNeeded;
+}
+
+function isDeloadWeek(weekNumber) { return weekNumber % 5 === 0; }
+
+function getMilestone(streakDays, hasFirstProgressionHappenedBefore, firstProgressionTriggeredThisSession) {
+  if (!hasFirstProgressionHappenedBefore && firstProgressionTriggeredThisSession) {
+    return SYSTEM_VOICE.milestones.first_progression;
+  }
+  const map = { 3: SYSTEM_VOICE.milestones.streak_3, 7: SYSTEM_VOICE.milestones.streak_7, 14: SYSTEM_VOICE.milestones.streak_14, 30: SYSTEM_VOICE.milestones.streak_30 };
+  return map[streakDays] || null;
+}
+
+function getRotationExercise(pattern, currentDifficulty, userClass, userEquipment, exerciseLibrary, excludeId) {
+  const candidates = Object.values(exerciseLibrary).filter(ex =>
+    ex.movement_pattern === pattern && ex.id !== excludeId &&
+    Math.abs(ex.difficulty - currentDifficulty) <= 1 &&
+    userCanPerform(ex, userEquipment) &&
+    exerciseMatchesClassAffinity(ex, userClass)
+  );
+  if (candidates.length === 0) return null;
+  return getRandomItem(candidates);
+}
+
+function adaptExercise(assignedExercise, performance, rating, userClass, exerciseLibrary, userEquipment, deload = false) {
+  const classDef = CLASS_DEFINITIONS[userClass];
+  const speed = classDef.progression_speed;
+  const repMode = assignedExercise.rep_mode || "reps";
+  const isTimed = repMode === "timed";
+  const isDistance = repMode === "distance";
+  // interval type is treated as timed internally, just with a special display note later
+  const isInterval = repMode === "interval";
+  const effectiveMode = isInterval ? "timed" : repMode;
+
+  let metricAchieved, metricMin, metricMax;
+  if (effectiveMode === "timed") {
+    metricAchieved = performance.duration_achieved ?? assignedExercise.duration_seconds;
+    metricMin = assignedExercise.duration_seconds;
+    metricMax = assignedExercise.duration_seconds;
+  } else if (effectiveMode === "distance") {
+    metricAchieved = performance.distance_achieved ?? assignedExercise.reps_max;
+    metricMin = assignedExercise.reps_min;
+    metricMax = assignedExercise.reps_max;
+  } else {
+    metricAchieved = performance.reps_achieved ?? assignedExercise.reps_max;
+    metricMin = assignedExercise.reps_min;
+    metricMax = assignedExercise.reps_max;
+  }
+
+  if (deload) {
+    const sets = Math.max(2, assignedExercise.sets_default - 1);
+    const out = { exercise: assignedExercise, sets, rpe_target: 5, adaptationMessage: null };
+    if (effectiveMode === "timed") { out.duration_seconds = assignedExercise.duration_seconds; }
+    else if (effectiveMode === "distance") { out.reps_min = metricMin; out.reps_max = metricMin; }
+    else { out.reps_min = metricMin; out.reps_max = metricMin; }
+    return out;
+  }
+
+  if (rating <= 2) {
+    const atMax = metricAchieved >= metricMax;
+    const canIncreaseMetric = !atMax || speed === "slow";
+    if (canIncreaseMetric) {
+      if (effectiveMode === "timed") {
+        const inc = rating === 1 ? 10 : 5;
+        const newDuration = Math.min(metricMax + inc, metricMax + 60);
+        return { exercise: assignedExercise, sets: assignedExercise.sets_default + classDef.bonus_sets, duration_seconds: newDuration, reps_min: null, reps_max: null, rep_mode: repMode, is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.timed_progressed(assignedExercise.name, newDuration) };
+      } else if (effectiveMode === "distance") {
+        const inc = rating === 1 ? 200 : 100;
+        const newDist = Math.min(metricMax + inc, metricMax + 1000);
+        return { exercise: assignedExercise, sets: assignedExercise.sets_default + classDef.bonus_sets, reps_min: newDist, reps_max: newDist, rep_mode: "distance", is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.distance_increased(assignedExercise.name, newDist) };
+      } else {
+        const inc = rating === 1 ? 2 : 1;
+        const newMax = Math.min(metricMax + inc, metricMax + 3);
+        const newMin = metricMin + inc;
+        return { exercise: assignedExercise, sets: assignedExercise.sets_default + classDef.bonus_sets, reps_min: newMin, reps_max: newMax, rep_mode: "reps", is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.reps_increased(assignedExercise.name, newMax) };
+      }
+    }
+    const progId = assignedExercise.progression_id;
+    if (progId && exerciseLibrary[progId]) {
+      const nextEx = exerciseLibrary[progId];
+      if (nextEx.difficulty <= classDef.max_difficulty && userCanPerform(nextEx, userEquipment) && exerciseMatchesClassAffinity(nextEx, userClass)) {
+        return { exercise: nextEx, sets: nextEx.sets_default + classDef.bonus_sets, reps_min: nextEx.reps_min, reps_max: nextEx.reps_max, duration_seconds: nextEx.duration_seconds, rep_mode: nextEx.rep_mode, is_unilateral: nextEx.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.progressed_exercise(assignedExercise.name, nextEx.name) };
+      }
+    }
+    const newSets = Math.min(assignedExercise.sets_default + 1, 6);
+    return { exercise: assignedExercise, sets: newSets, reps_min: assignedExercise.reps_min, reps_max: assignedExercise.reps_max, duration_seconds: assignedExercise.duration_seconds, rep_mode: assignedExercise.rep_mode, is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.max_reached(assignedExercise.name) };
+  }
+
+  if (rating === 3) {
+    let newMetricMax = metricMax;
+    if (metricAchieved >= metricMax - 1) {
+      if (effectiveMode === "timed") newMetricMax = metricMax + 5;
+      else if (effectiveMode === "distance") newMetricMax = metricMax + 100;
+      else newMetricMax = Math.min(metricMax + 1, metricMax + 2);
+    }
+    const out = { exercise: assignedExercise, sets: assignedExercise.sets_default + classDef.bonus_sets, rpe_target: 7, adaptationMessage: null };
+    if (effectiveMode === "timed") out.duration_seconds = newMetricMax;
+    else if (effectiveMode === "distance") { out.reps_min = metricMin; out.reps_max = newMetricMax; }
+    else { out.reps_min = metricMin; out.reps_max = newMetricMax; }
+    return out;
+  }
+
+  if (rating >= 4) {
+    if (rating === 4) {
+      const newSets = Math.max(2, assignedExercise.sets_default - 1);
+      const out = { exercise: assignedExercise, sets: newSets, rpe_target: 6, adaptationMessage: null };
+      if (effectiveMode === "timed") {
+        const dur = Math.max(metricMin, metricMax - 10);
+        out.duration_seconds = dur;
+        out.adaptationMessage = SYSTEM_VOICE.adaptation.timed_regressed(assignedExercise.name, dur);
+      } else if (effectiveMode === "distance") {
+        const dist = Math.max(metricMin, metricMax - 200);
+        out.reps_min = metricMin; out.reps_max = dist;
+        out.adaptationMessage = SYSTEM_VOICE.adaptation.distance_decreased(assignedExercise.name, dist);
+      } else {
+        const newMax = Math.max(metricMin, metricMax - 2);
+        out.reps_min = metricMin; out.reps_max = newMax;
+        out.adaptationMessage = SYSTEM_VOICE.adaptation.reps_decreased(assignedExercise.name, newMax);
+      }
+      return out;
+    }
+    const regId = assignedExercise.regression_id;
+    if (regId && exerciseLibrary[regId]) {
+      const prevEx = exerciseLibrary[regId];
+      if (userCanPerform(prevEx, userEquipment) && exerciseMatchesClassAffinity(prevEx, userClass)) {
+        return { exercise: prevEx, sets: prevEx.sets_default + classDef.bonus_sets, reps_min: prevEx.reps_min, reps_max: prevEx.reps_max, duration_seconds: prevEx.duration_seconds, rep_mode: prevEx.rep_mode, is_unilateral: prevEx.is_unilateral, rpe_target: 6, adaptationMessage: SYSTEM_VOICE.adaptation.regressed_exercise(assignedExercise.name, prevEx.name) };
+      }
+    }
+    const newSets = 2;
+    if (effectiveMode === "timed") {
+      const dur = metricMin;
+      return { exercise: assignedExercise, sets: newSets, duration_seconds: dur, rpe_target: 5, adaptationMessage: SYSTEM_VOICE.adaptation.timed_regressed(assignedExercise.name, dur) };
+    } else if (effectiveMode === "distance") {
+      const dist = metricMin;
+      return { exercise: assignedExercise, sets: newSets, reps_min: dist, reps_max: dist, rpe_target: 5, adaptationMessage: SYSTEM_VOICE.adaptation.distance_decreased(assignedExercise.name, dist) };
+    } else {
+      const newMax = metricMin + 1;
+      return { exercise: assignedExercise, sets: newSets, reps_min: metricMin, reps_max: newMax, rpe_target: 5, adaptationMessage: SYSTEM_VOICE.adaptation.reps_decreased(assignedExercise.name, newMax) };
+    }
+  }
+}
+
+function buildInitialSession(userProfile, exerciseLibrary) {
+  const { class: userClass, equipment, experience } = userProfile;
+  const classDef = CLASS_DEFINITIONS[userClass];
+  const pool = Object.values(exerciseLibrary).filter(ex =>
+    userCanPerform(ex, equipment) && exerciseMatchesClassAffinity(ex, userClass) && ex.difficulty <= classDef.max_difficulty
+  );
+  const byPattern = {};
+  classDef.preferred_patterns.forEach(p => { byPattern[p] = []; });
+  pool.forEach(ex => { if (byPattern[ex.movement_pattern]) byPattern[ex.movement_pattern].push(ex); });
+  const selected = [];
+  classDef.preferred_patterns.forEach((pattern, i) => {
+    const exercises = byPattern[pattern];
+    if (!exercises || exercises.length === 0) return;
+    exercises.sort((a, b) => a.difficulty - b.difficulty);
+    const count = classDef.pattern_weights[i] >= 3 ? 2 : 1;
+    for (let j = 0; j < count && j < exercises.length; j++) {
+      if (!selected.find(se => se.id === exercises[j].id)) selected.push(exercises[j]);
+    }
+  });
+  if (selected.length < 4) {
+    const remaining = pool.filter(ex => !selected.find(se => se.id === ex.id));
+    remaining.sort((a, b) => a.difficulty - b.difficulty);
+    for (const ex of remaining) { if (selected.length >= 5) break; selected.push(ex); }
+  }
+  const exercises = selected.map(ex => {
+    const obj = {
+      exercise_id: ex.id, name: ex.name, sets: ex.sets_default + (classDef.bonus_sets || 0),
+      rep_mode: ex.rep_mode || "reps", is_unilateral: ex.is_unilateral || false,
+      tempo_code: ex.tempo_code || null, tempo_note: ex.tempo_note || null,
+      cues: filterCuesByExperience(ex.cues, experience),
+      tutorial_url: ex.tutorial_url || null, rpe_target: null,
+      actual_sets_completed: null, actual_reps_achieved: null,
+      actual_duration_achieved: null, actual_distance_achieved: null,
+    };
+    if (ex.rep_mode === "timed" || ex.rep_mode === "interval") {
+      obj.duration_seconds = ex.duration_seconds;
+    } else if (ex.rep_mode === "distance") {
+      obj.reps_min = ex.reps_min; obj.reps_max = ex.reps_max;
+    } else {
+      obj.reps_min = ex.reps_min; obj.reps_max = ex.reps_max;
+    }
+    return obj;
+  });
+  return { date: new Date().toISOString().split("T")[0], week_number: 1, is_deload: false, exercises, patterns_used: [...new Set(selected.map(ex => ex.movement_pattern))], priority_pattern_gap: null };
+}
+
+function buildTodaySession({ userProfile, yesterdaySession, sessionHistory, exerciseLibrary, weekNumber, streakDays }) {
+  const trainingDays = userProfile.trainingDays || 4;
+  const today = new Date().getDay(); // 0=Sun, 1=Mon, ... 6=Sat
+  // Build active days symmetrically around the week
+  const daySchedules = {
+    3: [1, 3, 5],           // Mon, Wed, Fri
+    4: [1, 2, 4, 5],        // Mon, Tue, Thu, Fri
+    5: [1, 2, 3, 4, 5],     // Mon–Fri
+    6: [1, 2, 3, 4, 5, 6],  // Mon–Sat
+    7: [0, 1, 2, 3, 4, 5, 6]
+  };
+  const activeDays = daySchedules[trainingDays] || daySchedules[4];
+  const isScheduledRestDay = !activeDays.includes(today);
+  const userClass = userProfile.class;
+  const userEquipment = userProfile.equipment;
+  const userExperience = userProfile.experience;
+  const hasFirstProgressionHappenedBefore = userProfile.hasFirstProgressionHappened || false;
+  const deload = isDeloadWeek(weekNumber);
+  const rating = yesterdaySession?.rating ?? 3;
+  const isFirstSession = !yesterdaySession;
+
+  if (isFirstSession) {
+    const initialSession = buildInitialSession(userProfile, exerciseLibrary);
+    return { session: initialSession, voiceMessage: SYSTEM_VOICE.session_open.first_ever, meta: { firstProgressionOccurred: false } };
+  }
+
+  if (isScheduledRestDay) {
+    return { session: null, voiceMessage: SYSTEM_VOICE.session_open.scheduled_rest, meta: { firstProgressionOccurred: false } };
+  }
+
+  const priorityPattern = getUnderrepresentedPattern(sessionHistory, userClass);
+  const adaptedExercises = [];
+  const adaptationMessages = [];
+  let firstProgressionOccurredThisSession = false;
+
+  if (yesterdaySession.exercises) {
+    for (const assignment of yesterdaySession.exercises) {
+      let exercise = exerciseLibrary[assignment.exercise_id];
+      if (!exercise) continue;
+      const performance = {
+        sets_completed: assignment.actual_sets_completed ?? assignment.sets,
+        reps_achieved: assignment.actual_reps_achieved ?? (assignment.reps_max || 0),
+        duration_achieved: assignment.actual_duration_achieved ?? (assignment.duration_seconds || 0),
+        distance_achieved: assignment.actual_distance_achieved ?? (assignment.reps_max || 0),
+      };
+      let adapted = adaptExercise(exercise, performance, rating, userClass, exerciseLibrary, userEquipment, deload);
+
+      const isProgression = adapted.exercise.id !== exercise.id ||
+        (adapted.reps_max && adapted.reps_max > (exercise.reps_max || 0)) ||
+        (adapted.duration_seconds && adapted.duration_seconds > (exercise.duration_seconds || 0)) ||
+        (adapted.reps_max && exercise.rep_mode === "distance" && adapted.reps_max > (exercise.reps_max || 0));
+      if (isProgression && !hasFirstProgressionHappenedBefore) firstProgressionOccurredThisSession = true;
+
+      if (!deload && rating === 3 && adapted.exercise.id === exercise.id) {
+        const rotationEx = getRotationExercise(exercise.movement_pattern, exercise.difficulty, userClass, userEquipment, exerciseLibrary, exercise.id);
+        if (rotationEx) {
+          adapted = { ...adapted, exercise: rotationEx, sets: rotationEx.sets_default + (CLASS_DEFINITIONS[userClass].bonus_sets || 0),
+            reps_min: rotationEx.reps_min, reps_max: rotationEx.reps_max,
+            duration_seconds: rotationEx.duration_seconds, rep_mode: rotationEx.rep_mode,
+            is_unilateral: rotationEx.is_unilateral,
+            adaptationMessage: SYSTEM_VOICE.adaptation.exercise_rotated(exercise.name, rotationEx.name) };
+        }
+      }
+
+      if (adapted.adaptationMessage) adaptationMessages.push(adapted.adaptationMessage);
+
+      const finalExercise = {
+        exercise_id: adapted.exercise.id, name: adapted.exercise.name,
+        sets: adapted.sets, rep_mode: adapted.rep_mode || adapted.exercise.rep_mode,
+        is_unilateral: adapted.is_unilateral || adapted.exercise.is_unilateral,
+        tempo_code: adapted.exercise.tempo_code || null,
+        tempo_note: adapted.exercise.tempo_note || null,
+        cues: filterCuesByExperience(adapted.exercise.cues, userExperience),
+        tutorial_url: adapted.exercise.tutorial_url || null,
+        rpe_target: adapted.rpe_target || null,
+        actual_sets_completed: null, actual_reps_achieved: null,
+        actual_duration_achieved: null, actual_distance_achieved: null,
+      };
+      if (adapted.rep_mode === "timed" || adapted.rep_mode === "interval") {
+        finalExercise.duration_seconds = adapted.duration_seconds;
+      } else if (adapted.rep_mode === "distance") {
+        finalExercise.reps_min = adapted.reps_min; finalExercise.reps_max = adapted.reps_max;
+      } else {
+        finalExercise.reps_min = adapted.reps_min; finalExercise.reps_max = adapted.reps_max;
+      }
+      adaptedExercises.push(finalExercise);
+    }
+  }
+
+  const todaysPatterns = adaptedExercises.map(e => exerciseLibrary[e.exercise_id]?.movement_pattern);
+  const patternGap = priorityPattern && !todaysPatterns.includes(priorityPattern);
+  if (patternGap) adaptationMessages.push(SYSTEM_VOICE.adaptation.pattern_gap(priorityPattern));
+
+  const milestoneMessage = getMilestone(streakDays, hasFirstProgressionHappenedBefore, firstProgressionOccurredThisSession);
+
+  let openingVoice = SYSTEM_VOICE.session_open.returning;
+  if (yesterdaySession?.wasRestDay) openingVoice = SYSTEM_VOICE.session_open.after_rest_day;
+  else if (deload) openingVoice = SYSTEM_VOICE.session_open.deload_week;
+
+  const voiceParts = [openingVoice];
+  if (adaptationMessages.length > 0) voiceParts.push(adaptationMessages.join(" "));
+  if (milestoneMessage) voiceParts.push(milestoneMessage);
+  const finalVoice = voiceParts.join(" ");
+
+  return {
+    session: {
+      date: new Date().toISOString().split("T")[0],
+      week_number: weekNumber,
+      is_deload: deload,
+      exercises: adaptedExercises,
+      patterns_used: [...new Set(todaysPatterns)],
+      priority_pattern_gap: patternGap ? priorityPattern : null,
+      rating: null,
+    },
+    voiceMessage: finalVoice,
+    meta: { firstProgressionOccurred: firstProgressionOccurredThisSession },
+  };
+}
+
+// ============================================================
+// 3. PERSISTENCE (localStorage)
+// ============================================================
+function loadData() {
+  const raw = localStorage.getItem('GymLevelingData');
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (e) { return null; }
+}
+function saveData(data) { localStorage.setItem('GymLevelingData', JSON.stringify(data)); }
+function getAppData() {
+  let data = loadData();
+  if (!data) data = { userProfile: null, history: [], streak: 0, week: 1, hasFirstProgressionHappened: false };
+  return data;
+}
+function saveAppData(appData) { saveData(appData); }
+
+// ============================================================
+// 4. EXPORT / IMPORT / RESET
+// ============================================================
+function exportData() {
+  const data = localStorage.getItem('GymLevelingData');
+  if (!data) { alert('No data to export.'); return; }
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Gym_leveling_backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.userProfile && !data.history) { alert('Invalid backup file.'); return; }
+      localStorage.setItem('GymLevelingData', JSON.stringify(data));
+      alert('✅ Data imported! Reloading...');
+      location.reload();
+    } catch (err) { alert('❌ Import failed: ' + err.message); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+function resetAllData() {
+  if (!confirm('⚠️ Delete ALL progress (profile, history, streak)?')) return;
+  if (!confirm('Really? No undo.')) return;
+  localStorage.removeItem('GymLevelingData');
+  alert('Data cleared. Reloading...');
+  location.reload();
+}
+
+// ============================================================
+// 5. UI RENDER FUNCTIONS
+// ============================================================
+function renderHeader(streak, week) {
+  return `
+    <div class="header">
+      <div class="header-left">
+        <h1>⚔️ GYM LEVELING</h1>
+        <div class="subtitle">Fitness System v3.1</div>
+      </div>
+      <div class="header-right">
+        <span class="streak-badge">🔥 ${streak} day streak</span>
+        <span class="week-badge">📅 Week ${week}</span>
+        <div class="toolbar">
+          <button class="btn-icon" onclick="exportData()">📤 Export</button>
+          <button class="btn-icon" onclick="document.getElementById('importFile').click()">📥 Import</button>
+          <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+          <button class="btn-icon danger" onclick="resetAllData()">🗑️ Reset</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSetup() {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    ${renderHeader(0, 1)}
+    <div class="card">
+      <div class="card-title">🛠️ Calibration <span class="badge">Required</span></div>
+      <label>Choose your class:</label>
+      <select id="class-select">
+        <option value="warrior">Warrior – balanced strength & power</option>
+        <option value="tank">Tank – heavy lifting & endurance</option>
+        <option value="assassin">Assassin – agility & explosive power</option>
+        <option value="mage">Mage – mobility, control & stability</option>
+        <option value="ranger">Ranger – cardio & stamina</option>
+      </select>
+
+      <label>Equipment you have access to:</label>
+      <div class="checkbox-grid">
+        <label><input type="checkbox" class="equip-checkbox" value="dumbbells"> Dumbbells</label>
+        <label><input type="checkbox" class="equip-checkbox" value="chair"> Chair / Bench</label>
+        <label><input type="checkbox" class="equip-checkbox" value="pull_up_bar"> Pull‑up Bar</label>
+        <label><input type="checkbox" class="equip-checkbox" value="backpack"> Backpack (weighted)</label>
+        <label><input type="checkbox" class="equip-checkbox" value="gym"> Full Gym Access</label>
+      </div>
+
+      <div id="dumbbell-weight-group" style="display: none;" class="input-group">
+        <label>Max dumbbell weight (kg):</label>
+        <input type="number" id="dumbbell-weight" value="10" min="1" max="50" step="2.5">
+      </div>
+      <div id="backpack-weight-group" style="display: none;" class="input-group">
+        <label>Backpack weight (kg):</label>
+        <input type="number" id="backpack-weight" value="5" min="1" max="30" step="1">
+      </div>
+
+      <label>Experience level:</label>
+      <select id="exp-select">
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+
+      <label>How many days per week do you want to train?</label>
+      <select id="days-select">
+        <option value="3">3 days (e.g., Mon/Wed/Fri)</option>
+        <option value="4" selected>4 days (e.g., Mon/Tue/Thu/Fri)</option>
+        <option value="5">5 days (Mon–Fri)</option>
+        <option value="6">6 days (intense)</option>
+        <option value="7">7 days (every day)</option>
+      </select>
+
+      <div class="btn-group">
+        <button class="btn-primary" onclick="doSetup()">⚡ Register Hunter</button>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('.equip-checkbox').forEach(cb => {
+    cb.addEventListener('change', function() {
+      document.getElementById('dumbbell-weight-group').style.display =
+        document.querySelector('.equip-checkbox[value="dumbbells"]').checked ? 'block' : 'none';
+      document.getElementById('backpack-weight-group').style.display =
+        document.querySelector('.equip-checkbox[value="backpack"]').checked ? 'block' : 'none';
+    });
+  });
+}
+
+function doSetup() {
+  const cl = document.getElementById('class-select').value;
+  const checkboxes = document.querySelectorAll('.equip-checkbox:checked');
+  let equipment = Array.from(checkboxes).map(cb => cb.value);
+
+  const dw = document.getElementById('dumbbell-weight');
+  if (dw && document.querySelector('.equip-checkbox[value="dumbbells"]').checked) {
+    equipment.push(`dumbbells_${parseFloat(dw.value) || 10}kg`);
+  }
+  const bw = document.getElementById('backpack-weight');
+  if (bw && document.querySelector('.equip-checkbox[value="backpack"]').checked) {
+    equipment.push(`backpack_${parseFloat(bw.value) || 5}kg`);
+  }
+  if (equipment.includes('gym')) {
+    equipment = equipment.filter(e => e !== 'gym');
+    ['dumbbells', 'chair', 'pull_up_bar', 'backpack', 'barbell', 'cable_machine'].forEach(item => {
+      if (!equipment.includes(item)) equipment.push(item);
+    });
+    if (!equipment.some(e => e.startsWith('dumbbells_'))) equipment.push('dumbbells_10kg');
+  }
+
+  const exp = document.getElementById('exp-select').value;
+  const trainingDays = parseInt(document.getElementById('days-select').value) || 4;
+
+  const appData = getAppData();
+  appData.userProfile = { class: cl, equipment, experience: exp, trainingDays, hasFirstProgressionHappened: false };
+  appData.history = [];
+  appData.streak = 0;
+  appData.week = 1;
+  saveAppData(appData);
+  location.reload();
+}
+
+function selectRating(el, val) {
+  document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('rating').value = val;
+}
+
+function logRestDay() {
+  if (!confirm('Log today as a planned rest day? Your streak will be preserved.')) return;
+  const appData = getAppData();
+  const today = new Date().toISOString().split('T')[0];
+  if (appData.history.length > 0 && appData.history[appData.history.length - 1].date === today) {
+    alert('You already logged something for today!');
+    return;
+  }
+  const restSession = {
+    date: today, week_number: appData.week, is_deload: false,
+    exercises: [], patterns_used: [], priority_pattern_gap: null,
+    rating: null, wasRestDay: true
+  };
+  appData.history.push(restSession);
+  appData.streak += 1;
+  const realSessions = appData.history.filter(s => !s.wasRestDay).length;
+  if (realSessions % 7 === 0 && realSessions > 0) appData.week += 1;
+  saveAppData(appData);
+  alert('✅ Rest day logged. See you tomorrow!');
+  location.reload();
+}
+
+function renderWorkout(result) {
+  const app = document.getElementById('app');
+  const session = result.session;
+  const voice = result.voiceMessage;
+  const appData = getAppData();
+
+  let html = renderHeader(appData.streak, session.week_number);
+  html += `<div class="voice-box">📢 ${voice}</div>`;
+
+  html += `<div class="card"><div class="card-title">🏋️ Today's Trial ${session.is_deload ? '<span class="badge">Recovery</span>' : ''}</div>`;
+
+  session.exercises.forEach((ex, i) => {
+    html += `<div class="exercise-card">`;
+    html += `<div class="ex-header">`;
+    html += `<span class="ex-number">#${i+1}</span>`;
+    html += `<span class="ex-name">${ex.name}</span>`;
+    html += `</div>`;
+    html += `<div class="ex-metrics">`;
+    html += `<span class="metric">🏋️ Sets: <strong>${ex.sets}</strong></span>`;
+    if (ex.rep_mode === 'timed' || ex.rep_mode === 'interval') {
+      html += `<span class="metric">⏱️ Duration: <strong class="highlight">${ex.duration_seconds}s</strong></span>`;
+    } else if (ex.rep_mode === 'distance') {
+      html += `<span class="metric">📏 Distance: <strong class="highlight">${ex.reps_max}m</strong></span>`;
+    } else {
+      html += `<span class="metric">🔁 Reps: <strong class="highlight">${ex.reps_min}–${ex.reps_max}</strong>${ex.is_unilateral ? ' per side' : ''}</span>`;
+    }
+    if (ex.rpe_target) html += `<span class="metric">🎯 RPE: <strong>${ex.rpe_target}</strong></span>`;
+    html += `</div>`;
+    if (ex.tempo_note) html += `<div class="metric" style="font-size:0.8rem;color:var(--text-muted);">⏳ Tempo: ${ex.tempo_note}</div>`;
+    if (ex.cues && ex.cues.length > 0) {
+      html += `<div class="ex-cues">💡 ${ex.cues.map(c => `<span>${c}</span>`).join(' ')}</div>`;
+    }
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  // Performance logging
+  html += `<div class="card"><div class="card-title">📝 Log Performance</div>`;
+  session.exercises.forEach((ex, i) => {
+    html += `<label>${ex.name}:</label>`;
+    if (ex.rep_mode === 'timed' || ex.rep_mode === 'interval') {
+      html += `<input type="number" id="dur-${i}" placeholder="Duration (s)" value="${ex.duration_seconds}">`;
+    } else if (ex.rep_mode === 'distance') {
+      html += `<input type="number" id="dist-${i}" placeholder="Distance (m)" value="${ex.reps_max}">`;
+    } else {
+      html += `<div style="display:flex; gap:10px; flex-wrap:wrap;">`;
+      html += `<input type="number" id="reps-${i}" placeholder="Reps" value="${ex.reps_max}" style="max-width:120px;">`;
+      html += `<input type="number" id="sets-${i}" placeholder="Sets" value="${ex.sets}" style="max-width:120px;">`;
+      html += `</div>`;
+    }
+  });
+
+  html += `<label style="margin-top:20px;">How did this session feel?</label>`;
+  html += `<div class="rating-grid">`;
+  const ratings = [
+    { val: 1, label: 'TRIVIAL' },
+    { val: 2, label: 'MANAGEABLE' },
+    { val: 3, label: 'OPTIMAL' },
+    { val: 4, label: 'DEMANDING' },
+    { val: 5, label: 'LIMIT REACHED' }
+  ];
+  ratings.forEach(r => {
+    html += `<button type="button" class="rating-btn" data-value="${r.val}" onclick="selectRating(this, ${r.val})">
+              ${r.label}
+            </button>`;
+  });
+  html += `</div>`;
+  html += `<input type="hidden" id="rating" value="3">`;
+
+  html += `<div class="btn-group">`;
+  html += `<button class="btn-primary" onclick="submitWorkout()">✅ Complete Trial</button>`;
+  html += `<button class="btn-secondary" onclick="logRestDay()">🛌 Rest Day</button>`;
+  html += `</div></div>`;
+
+  app.innerHTML = html;
+
+  // Highlight default rating (Just right)
+  setTimeout(() => {
+    const defaultBtn = document.querySelector('.rating-btn[data-value="3"]');
+    if (defaultBtn) defaultBtn.classList.add('active');
+  }, 50);
+}
+
+function submitWorkout() {
+  const appData = getAppData();
+  const savedSession = window.__currentSession;
+  if (!savedSession) { alert('Session data missing. Please refresh.'); return; }
+  const session = savedSession;
+
+  const completedExercises = session.exercises.map((ex, i) => {
+    let perf = {};
+    if (ex.rep_mode === 'timed' || ex.rep_mode === 'interval') {
+      const el = document.getElementById(`dur-${i}`);
+      perf.actual_duration_achieved = el ? parseInt(el.value) || ex.duration_seconds : ex.duration_seconds;
+    } else if (ex.rep_mode === 'distance') {
+      const el = document.getElementById(`dist-${i}`);
+      perf.actual_distance_achieved = el ? parseInt(el.value) || ex.reps_max : ex.reps_max;
+    } else {
+      const repsEl = document.getElementById(`reps-${i}`);
+      const setsEl = document.getElementById(`sets-${i}`);
+      perf.actual_reps_achieved = repsEl ? parseInt(repsEl.value) || ex.reps_max : ex.reps_max;
+      perf.actual_sets_completed = setsEl ? parseInt(setsEl.value) || ex.sets : ex.sets;
+    }
+    return perf;
+  });
+
+  const rating = parseInt(document.getElementById('rating').value) || 3;
+
+  const mergedExercises = session.exercises.map((ex, i) => {
+    const perf = completedExercises[i] || {};
+    return {
+      ...ex,
+      actual_sets_completed: perf.actual_sets_completed ?? ex.sets,
+      actual_reps_achieved: perf.actual_reps_achieved ?? (ex.reps_max || 0),
+      actual_duration_achieved: perf.actual_duration_achieved ?? (ex.duration_seconds || 0),
+      actual_distance_achieved: perf.actual_distance_achieved ?? (ex.reps_max || 0),
+    };
+  });
+
+  const completedSession = { ...session, exercises: mergedExercises, rating };
+  appData.history.push(completedSession);
+  appData.streak += 1;
+  const realSessions = appData.history.filter(s => !s.wasRestDay).length;
+  if (realSessions % 7 === 0 && realSessions > 0) appData.week += 1;
+  if (result.meta.firstProgressionOccurred) appData.userProfile.hasFirstProgressionHappened = true;
+  saveAppData(appData);
+
+  alert('✅ Session recorded! See you tomorrow, hunter.');
+  location.reload();
+}
+
+// ============================================================
+// 6. BOOT
+// ============================================================
+window.onload = function() {
+  const appData = getAppData();
+
+  // Streak reset logic
+  if (appData.userProfile && appData.history.length > 0) {
+    const today = new Date().toISOString().split('T')[0];
+    const lastSession = appData.history[appData.history.length - 1];
+    const lastDate = lastSession.date;
+    if (lastDate !== today) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      if (lastDate !== yesterdayStr && lastDate !== today) {
+        appData.streak = 0;
+        saveAppData(appData);
+      }
+    }
+  }
+
+  if (!appData.userProfile) {
+    renderSetup();
+    return;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  if (appData.history.length > 0) {
+    const lastSession = appData.history[appData.history.length - 1];
+    if (lastSession.date === today && !lastSession.wasRestDay) {
+      const app = document.getElementById('app');
+      app.innerHTML = renderHeader(appData.streak, appData.week);
+      app.innerHTML += `
+        <div class="card done-state">
+          <div class="big-icon">✅</div>
+          <h2>Today's training is complete!</h2>
+          <p style="margin:10px 0 20px 0;">Come back tomorrow, hunter.</p>
+          <button class="btn-primary" onclick="location.reload()">🔄 Refresh</button>
+        </div>
+      `;
+      return;
+    }
+  }
+
+  const yesterday = appData.history.length > 0 ? appData.history[appData.history.length - 1] : null;
+  const result = buildTodaySession({
+    userProfile: appData.userProfile,
+    yesterdaySession: yesterday,
+    sessionHistory: appData.history,
+    exerciseLibrary: exerciseLibrary,
+    weekNumber: appData.week,
+    streakDays: appData.streak,
+  });
+
+  if (result.session === null) {
+    const app = document.getElementById('app');
+    app.innerHTML = renderHeader(appData.streak, appData.week);
+    app.innerHTML += `
+      <div class="voice-box">📢 ${result.voiceMessage}</div>
+      <div class="card done-state">
+        <div class="big-icon">🛌</div>
+        <h2>Scheduled Rest Day</h2>
+        <p style="margin:10px 0 20px 0;">The System has no trial assigned today.</p>
+        <button class="btn-secondary" onclick="logRestDay()">Log Rest Day</button>
+      </div>
+    `;
+    return;
+  }
+
+  window.__currentSession = result.session;
+  renderWorkout(result);
+};
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js');
+    });
+  }
+</script>
+</body>
+</html>
