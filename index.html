@@ -649,8 +649,12 @@ function getUnderrepresentedPattern(sessionHistory, userClass) {
   return mostNeeded;
 }
 
-function isDeloadWeek(weekNumber) { return weekNumber % 5 === 0; }
-
+function isDeloadWeek(weekNumber, trainingDays) {
+  const deloadFrequency = { 3: 6, 4: 5, 5: 4, 6: 3, 7: 2 };
+  const freq = deloadFrequency[trainingDays] || 5;
+  return weekNumber % freq === 0;
+}
+  
 function getMilestone(streakDays, hasFirstProgressionHappenedBefore, firstProgressionTriggeredThisSession) {
   if (!hasFirstProgressionHappenedBefore && firstProgressionTriggeredThisSession) {
     return SYSTEM_VOICE.milestones.first_progression;
@@ -670,8 +674,9 @@ function getRotationExercise(pattern, currentDifficulty, userClass, userEquipmen
   return getRandomItem(candidates);
 }
 
-function adaptExercise(assignedExercise, performance, rating, userClass, exerciseLibrary, userEquipment, deload = false) {
+function adaptExercise(assignedExercise, performance, rating, userClass, exerciseLibrary, userEquipment, deload = false, volumeScale = 1.0) {
   const classDef = CLASS_DEFINITIONS[userClass];
+  const scaleSets = (s) => Math.max(2, Math.round(s * volumeScale));
   const speed = classDef.progression_speed;
   const repMode = assignedExercise.rep_mode || "reps";
   const isTimed = repMode === "timed";
@@ -696,7 +701,7 @@ function adaptExercise(assignedExercise, performance, rating, userClass, exercis
   }
 
   if (deload) {
-    const sets = Math.max(2, assignedExercise.sets_default - 1);
+    const sets = scaleSets(Math.max(2, assignedExercise.sets_default - 1));
     const out = { exercise: assignedExercise, sets, rpe_target: 5, adaptationMessage: null };
     if (effectiveMode === "timed") { out.duration_seconds = assignedExercise.duration_seconds; }
     else if (effectiveMode === "distance") { out.reps_min = metricMin; out.reps_max = metricMin; }
@@ -711,26 +716,26 @@ function adaptExercise(assignedExercise, performance, rating, userClass, exercis
       if (effectiveMode === "timed") {
         const inc = rating === 1 ? 10 : 5;
         const newDuration = Math.min(metricMax + inc, metricMax + 60);
-        return { exercise: assignedExercise, sets: assignedExercise.sets_default + classDef.bonus_sets, duration_seconds: newDuration, reps_min: null, reps_max: null, rep_mode: repMode, is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.timed_progressed(assignedExercise.name, newDuration) };
+        return { exercise: assignedExercise, sets: scaleSets(assignedExercise.sets_default + classDef.bonus_sets), duration_seconds: newDuration, reps_min: null, reps_max: null, rep_mode: repMode, is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.timed_progressed(assignedExercise.name, newDuration) };
       } else if (effectiveMode === "distance") {
         const inc = rating === 1 ? 200 : 100;
         const newDist = Math.min(metricMax + inc, metricMax + 1000);
-        return { exercise: assignedExercise, sets: assignedExercise.sets_default + classDef.bonus_sets, reps_min: newDist, reps_max: newDist, rep_mode: "distance", is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.distance_increased(assignedExercise.name, newDist) };
+        return { exercise: assignedExercise, sets: scaleSets(assignedExercise.sets_default + classDef.bonus_sets), duration_seconds: newDuration, reps_max: newDist, rep_mode: "distance", is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.distance_increased(assignedExercise.name, newDist) };
       } else {
         const inc = rating === 1 ? 2 : 1;
         const newMax = Math.min(metricMax + inc, metricMax + 3);
         const newMin = metricMin + inc;
-        return { exercise: assignedExercise, sets: assignedExercise.sets_default + classDef.bonus_sets, reps_min: newMin, reps_max: newMax, rep_mode: "reps", is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.reps_increased(assignedExercise.name, newMax) };
+        return { exercise: assignedExercise, sets: scaleSets(assignedExercise.sets_default + classDef.bonus_sets), reps_min: newMin, reps_max: newMax, rep_mode: "reps", is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.reps_increased(assignedExercise.name, newMax) };
       }
     }
     const progId = assignedExercise.progression_id;
     if (progId && exerciseLibrary[progId]) {
       const nextEx = exerciseLibrary[progId];
       if (nextEx.difficulty <= classDef.max_difficulty && userCanPerform(nextEx, userEquipment) && exerciseMatchesClassAffinity(nextEx, userClass)) {
-        return { exercise: nextEx, sets: nextEx.sets_default + classDef.bonus_sets, reps_min: nextEx.reps_min, reps_max: nextEx.reps_max, duration_seconds: nextEx.duration_seconds, rep_mode: nextEx.rep_mode, is_unilateral: nextEx.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.progressed_exercise(assignedExercise.name, nextEx.name) };
+        return { exercise: nextEx, sets: scaleSets(nextEx.sets_default + classDef.bonus_sets), reps_min: nextEx.reps_min, reps_max: nextEx.reps_max, duration_seconds: nextEx.duration_seconds, rep_mode: nextEx.rep_mode, is_unilateral: nextEx.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.progressed_exercise(assignedExercise.name, nextEx.name) };
       }
     }
-    const newSets = Math.min(assignedExercise.sets_default + 1, 6);
+    const newSets = scaleSets(Math.min(assignedExercise.sets_default + 1, 6));
     return { exercise: assignedExercise, sets: newSets, reps_min: assignedExercise.reps_min, reps_max: assignedExercise.reps_max, duration_seconds: assignedExercise.duration_seconds, rep_mode: assignedExercise.rep_mode, is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.max_reached(assignedExercise.name) };
   }
 
@@ -750,7 +755,7 @@ function adaptExercise(assignedExercise, performance, rating, userClass, exercis
 
   if (rating >= 4) {
     if (rating === 4) {
-      const newSets = Math.max(2, assignedExercise.sets_default - 1);
+      const newSets = scaleSets(Math.max(2, assignedExercise.sets_default - 1));
       const out = { exercise: assignedExercise, sets: newSets, rpe_target: 6, adaptationMessage: null };
       if (effectiveMode === "timed") {
         const dur = Math.max(metricMin, metricMax - 10);
@@ -771,7 +776,7 @@ function adaptExercise(assignedExercise, performance, rating, userClass, exercis
     if (regId && exerciseLibrary[regId]) {
       const prevEx = exerciseLibrary[regId];
       if (userCanPerform(prevEx, userEquipment) && exerciseMatchesClassAffinity(prevEx, userClass)) {
-        return { exercise: prevEx, sets: prevEx.sets_default + classDef.bonus_sets, reps_min: prevEx.reps_min, reps_max: prevEx.reps_max, duration_seconds: prevEx.duration_seconds, rep_mode: prevEx.rep_mode, is_unilateral: prevEx.is_unilateral, rpe_target: 6, adaptationMessage: SYSTEM_VOICE.adaptation.regressed_exercise(assignedExercise.name, prevEx.name) };
+        return { exercise: prevEx, sets: scaleSets(prevEx.sets_default + classDef.bonus_sets), reps_min: prevEx.reps_min, reps_max: prevEx.reps_max, duration_seconds: prevEx.duration_seconds, rep_mode: prevEx.rep_mode, is_unilateral: prevEx.is_unilateral, rpe_target: 6, adaptationMessage: SYSTEM_VOICE.adaptation.regressed_exercise(assignedExercise.name, prevEx.name) };
       }
     }
     const newSets = 2;
@@ -812,9 +817,11 @@ function buildInitialSession(userProfile, exerciseLibrary) {
     remaining.sort((a, b) => a.difficulty - b.difficulty);
     for (const ex of remaining) { if (selected.length >= 5) break; selected.push(ex); }
   }
+  const volumeScales = { 3: 1.2, 4: 1.0, 5: 0.85, 6: 0.7, 7: 0.6 };
+  const volumeScale = volumeScales[userProfile.trainingDays] || 1.0;
   const exercises = selected.map(ex => {
     const obj = {
-      exercise_id: ex.id, name: ex.name, sets: ex.sets_default + (classDef.bonus_sets || 0),
+      exercise_id: ex.id, name: ex.name, sets: Math.max(2, Math.round((ex.sets_default + (classDef.bonus_sets || 0)) * volumeScale)),
       rep_mode: ex.rep_mode || "reps", is_unilateral: ex.is_unilateral || false,
       tempo_code: ex.tempo_code || null, tempo_note: ex.tempo_note || null,
       cues: filterCuesByExperience(ex.cues, experience),
@@ -851,7 +858,9 @@ function buildTodaySession({ userProfile, yesterdaySession, sessionHistory, exer
   const userEquipment = userProfile.equipment;
   const userExperience = userProfile.experience;
   const hasFirstProgressionHappenedBefore = userProfile.hasFirstProgressionHappened || false;
-  const deload = isDeloadWeek(weekNumber);
+  const deload = isDeloadWeek(weekNumber, userProfile.trainingDays);
+  const volumeScales = { 3: 1.2, 4: 1.0, 5: 0.85, 6: 0.7, 7: 0.6 };
+  const volumeScale = volumeScales[userProfile.trainingDays] || 1.0;
   const rating = yesterdaySession?.rating ?? 3;
   const isFirstSession = !yesterdaySession;
 
@@ -879,7 +888,7 @@ function buildTodaySession({ userProfile, yesterdaySession, sessionHistory, exer
         duration_achieved: assignment.actual_duration_achieved ?? (assignment.duration_seconds || 0),
         distance_achieved: assignment.actual_distance_achieved ?? (assignment.reps_max || 0),
       };
-      let adapted = adaptExercise(exercise, performance, rating, userClass, exerciseLibrary, userEquipment, deload);
+      let adapted = adaptExercise(exercise, performance, rating, userClass, exerciseLibrary, userEquipment, deload, volumeScale);
 
       const isProgression = adapted.exercise.id !== exercise.id ||
         (adapted.reps_max && adapted.reps_max > (exercise.reps_max || 0)) ||
