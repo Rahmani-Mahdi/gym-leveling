@@ -161,6 +161,14 @@
       color: var(--accent-bright);
       font-style: normal;
     }
+    .cue-line {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      padding: 4px 0;
+      line-height: 1.5;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .cue-line:last-child { border-bottom: none; }
 
     /* HISTORY SCREEN */
     .history-nav {
@@ -1399,6 +1407,8 @@ function renderWorkout(result) {
   const session = result.session;
   const voice = result.voiceMessage;
   const appData = getAppData();
+  const experience = appData.userProfile?.experience || 'beginner';
+  const experience = appData.userProfile?.experience || 'beginner';
 
   let html = renderHeader(appData.streak, session.week_number);
   html += `<div class="voice-box">📢 ${voice}</div>`;
@@ -1422,7 +1432,12 @@ function renderWorkout(result) {
     }
     if (ex.rpe_target) html += `<span class="metric">🎯 RPE: <strong>${ex.rpe_target}</strong></span>`;
     html += `</div>`;
-    if (ex.tempo_note) html += `<div class="metric" style="font-size:0.8rem;color:var(--text-muted);">⏳ Tempo: ${ex.tempo_note}</div>`;
+    if (ex.tempo_note) {
+      const tempoCode = (ex.tempo_code && experience !== 'beginner')
+        ? `<span style="font-family:monospace;color:var(--accent);margin-right:8px;">[${ex.tempo_code}]</span>`
+        : '';
+      html += `<div class="metric" style="font-size:0.8rem;color:var(--text-muted);">⏳ ${tempoCode}${ex.tempo_note}</div>`;
+    }
     if (ex.cues && ex.cues.length > 0) {
       html += `<div class="ex-cues">💡 ${ex.cues.map(c => `<span>${c}</span>`).join(' ')}</div>`;
     }
