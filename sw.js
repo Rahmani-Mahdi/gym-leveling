@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sl-fitness-v2';
+const CACHE_NAME = 'sl-fitness-v3';
 const ASSETS = [
   './',
   './index.html',
