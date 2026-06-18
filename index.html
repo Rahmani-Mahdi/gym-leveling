@@ -946,7 +946,7 @@ function buildInitialSession(userProfile, exerciseLibrary) {
   });
   if (selected.length < 4) {
     const remaining = pool.filter(ex => !selected.find(se => se.id === ex.id));
-    remaining.sort((a, b) => a.difficulty - b.difficulty);
+    remaining.sort((a, b) => experience === 'advanced' ? b.difficulty - a.difficulty : a.difficulty - b.difficulty);
     for (const ex of remaining) { if (selected.length >= 5) break; selected.push(ex); }
   }
   const volumeScales = { 3: 1.2, 4: 1.0, 5: 0.85, 6: 0.7, 7: 0.6 };
