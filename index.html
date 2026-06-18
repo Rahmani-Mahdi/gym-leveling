@@ -162,6 +162,124 @@
       font-style: normal;
     }
 
+    /* HISTORY SCREEN */
+    .history-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .history-nav button {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-family: monospace;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .history-nav button:hover, .history-nav button.active {
+      background: rgba(69,162,158,0.15);
+      border-color: var(--accent);
+      color: var(--accent-bright);
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-box {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent-bright);
+      font-family: monospace;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-family: monospace;
+    }
+    .history-divider {
+      border: none;
+      border-top: 1px solid var(--border-glow);
+      margin: 8px 0 16px 0;
+    }
+    .history-entry {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.03);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      margin-bottom: 10px;
+    }
+    .history-entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .history-entry-date {
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+    .history-entry-rating {
+      font-family: monospace;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      padding: 2px 10px;
+      border-radius: 40px;
+      border: 1px solid currentColor;
+    }
+    .rating-trivial    { color: #6a7f9a; }
+    .rating-manageable { color: #45a29e; }
+    .rating-optimal    { color: #66fcf1; }
+    .rating-demanding  { color: #f0a500; }
+    .rating-limit      { color: #c0392b; }
+    .rating-rest       { color: #4a5568; }
+    .history-exercise-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .history-exercise-list li {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      padding: 2px 0;
+      font-family: monospace;
+    }
+    .history-exercise-list li span {
+      color: var(--text-muted);
+      margin-left: 6px;
+    }
+    .pattern-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+    .pattern-row:last-child { border-bottom: none; }
+    .pattern-name { color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; }
+    .pattern-count { color: var(--accent-bright); font-weight: 700; }
+
     .exercise-card {
       background: rgba(0, 0, 0, 0.25);
       border-radius: var(--radius-sm);
@@ -654,7 +772,7 @@ function isDeloadWeek(weekNumber, trainingDays) {
   const freq = deloadFrequency[trainingDays] || 5;
   return weekNumber % freq === 0;
 }
-  
+
 function getMilestone(streakDays, hasFirstProgressionHappenedBefore, firstProgressionTriggeredThisSession) {
   if (!hasFirstProgressionHappenedBefore && firstProgressionTriggeredThisSession) {
     return SYSTEM_VOICE.milestones.first_progression;
@@ -716,11 +834,11 @@ function adaptExercise(assignedExercise, performance, rating, userClass, exercis
       if (effectiveMode === "timed") {
         const inc = rating === 1 ? 10 : 5;
         const newDuration = Math.min(metricMax + inc, metricMax + 60);
-        return { exercise: assignedExercise, sets: scaleSets(assignedExercise.sets_default + classDef.bonus_sets), duration_seconds: newDuration, reps_min: null, reps_max: null, rep_mode: repMode, is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.timed_progressed(assignedExercise.name, newDuration) };
+        return { exercise: assignedExercise, sets: assignedExercise.sets_default + classDef.bonus_sets, duration_seconds: newDuration, reps_min: null, reps_max: null, rep_mode: repMode, is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.timed_progressed(assignedExercise.name, newDuration) };
       } else if (effectiveMode === "distance") {
         const inc = rating === 1 ? 200 : 100;
         const newDist = Math.min(metricMax + inc, metricMax + 1000);
-        return { exercise: assignedExercise, sets: scaleSets(assignedExercise.sets_default + classDef.bonus_sets), duration_seconds: newDuration, reps_max: newDist, rep_mode: "distance", is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.distance_increased(assignedExercise.name, newDist) };
+        return { exercise: assignedExercise, sets: scaleSets(assignedExercise.sets_default + classDef.bonus_sets), reps_min: newDist, reps_max: newDist, rep_mode: "distance", is_unilateral: assignedExercise.is_unilateral, rpe_target: 8, adaptationMessage: SYSTEM_VOICE.adaptation.distance_increased(assignedExercise.name, newDist) };
       } else {
         const inc = rating === 1 ? 2 : 1;
         const newMax = Math.min(metricMax + inc, metricMax + 3);
@@ -746,7 +864,7 @@ function adaptExercise(assignedExercise, performance, rating, userClass, exercis
       else if (effectiveMode === "distance") newMetricMax = metricMax + 100;
       else newMetricMax = Math.min(metricMax + 1, metricMax + 2);
     }
-    const out = { exercise: assignedExercise, sets: assignedExercise.sets_default + classDef.bonus_sets, rpe_target: 7, adaptationMessage: null };
+    const out = { exercise: assignedExercise, sets: scaleSets(assignedExercise.sets_default + classDef.bonus_sets), rpe_target: 7, adaptationMessage: null };
     if (effectiveMode === "timed") out.duration_seconds = newMetricMax;
     else if (effectiveMode === "distance") { out.reps_min = metricMin; out.reps_max = newMetricMax; }
     else { out.reps_min = metricMin; out.reps_max = newMetricMax; }
@@ -779,7 +897,7 @@ function adaptExercise(assignedExercise, performance, rating, userClass, exercis
         return { exercise: prevEx, sets: scaleSets(prevEx.sets_default + classDef.bonus_sets), reps_min: prevEx.reps_min, reps_max: prevEx.reps_max, duration_seconds: prevEx.duration_seconds, rep_mode: prevEx.rep_mode, is_unilateral: prevEx.is_unilateral, rpe_target: 6, adaptationMessage: SYSTEM_VOICE.adaptation.regressed_exercise(assignedExercise.name, prevEx.name) };
       }
     }
-    const newSets = 2;
+    const newSets = scaleSets(2);
     if (effectiveMode === "timed") {
       const dur = metricMin;
       return { exercise: assignedExercise, sets: newSets, duration_seconds: dur, rpe_target: 5, adaptationMessage: SYSTEM_VOICE.adaptation.timed_regressed(assignedExercise.name, dur) };
@@ -796,18 +914,22 @@ function adaptExercise(assignedExercise, performance, rating, userClass, exercis
 function buildInitialSession(userProfile, exerciseLibrary) {
   const { class: userClass, equipment, experience } = userProfile;
   const classDef = CLASS_DEFINITIONS[userClass];
+  const difficultyGate = { beginner: 3, intermediate: 4, advanced: 5 };
+  const maxDifficulty = Math.min(classDef.max_difficulty, difficultyGate[experience] || 3);
   const pool = Object.values(exerciseLibrary).filter(ex =>
-    userCanPerform(ex, equipment) && exerciseMatchesClassAffinity(ex, userClass) && ex.difficulty <= classDef.max_difficulty
+    userCanPerform(ex, equipment) && exerciseMatchesClassAffinity(ex, userClass) && ex.difficulty <= maxDifficulty
   );
   const byPattern = {};
   classDef.preferred_patterns.forEach(p => { byPattern[p] = []; });
   pool.forEach(ex => { if (byPattern[ex.movement_pattern]) byPattern[ex.movement_pattern].push(ex); });
+  const maxSamePattern = { beginner: 1, intermediate: 2, advanced: 3 };
+  const patternCap = maxSamePattern[experience] || 1;
   const selected = [];
   classDef.preferred_patterns.forEach((pattern, i) => {
     const exercises = byPattern[pattern];
     if (!exercises || exercises.length === 0) return;
     exercises.sort((a, b) => a.difficulty - b.difficulty);
-    const count = classDef.pattern_weights[i] >= 3 ? 2 : 1;
+    const count = Math.min(classDef.pattern_weights[i] >= 3 ? 2 : 1, patternCap);
     for (let j = 0; j < count && j < exercises.length; j++) {
       if (!selected.find(se => se.id === exercises[j].id)) selected.push(exercises[j]);
     }
@@ -818,7 +940,10 @@ function buildInitialSession(userProfile, exerciseLibrary) {
     for (const ex of remaining) { if (selected.length >= 5) break; selected.push(ex); }
   }
   const volumeScales = { 3: 1.2, 4: 1.0, 5: 0.85, 6: 0.7, 7: 0.6 };
-  const volumeScale = volumeScales[userProfile.trainingDays] || 1.0;
+  const frequencyScale = volumeScales[userProfile.trainingDays] || 1.0;
+  const experienceScales = { beginner: 0.7, intermediate: 1.0, advanced: 1.2 };
+  const experienceScale = experienceScales[experience] || 1.0;
+  const volumeScale = frequencyScale * experienceScale;
   const exercises = selected.map(ex => {
     const obj = {
       exercise_id: ex.id, name: ex.name, sets: Math.max(2, Math.round((ex.sets_default + (classDef.bonus_sets || 0)) * volumeScale)),
@@ -830,7 +955,9 @@ function buildInitialSession(userProfile, exerciseLibrary) {
       actual_duration_achieved: null, actual_distance_achieved: null,
     };
     if (ex.rep_mode === "timed" || ex.rep_mode === "interval") {
-      obj.duration_seconds = ex.duration_seconds;
+      const maxCardio = { beginner: 1200, intermediate: 2400, advanced: 3600 };
+      const cardioCap = ex.movement_pattern === "cardio" ? (maxCardio[experience] || 1200) : Infinity;
+      obj.duration_seconds = Math.min(ex.duration_seconds, cardioCap);
     } else if (ex.rep_mode === "distance") {
       obj.reps_min = ex.reps_min; obj.reps_max = ex.reps_max;
     } else {
@@ -860,7 +987,10 @@ function buildTodaySession({ userProfile, yesterdaySession, sessionHistory, exer
   const hasFirstProgressionHappenedBefore = userProfile.hasFirstProgressionHappened || false;
   const deload = isDeloadWeek(weekNumber, userProfile.trainingDays);
   const volumeScales = { 3: 1.2, 4: 1.0, 5: 0.85, 6: 0.7, 7: 0.6 };
-  const volumeScale = volumeScales[userProfile.trainingDays] || 1.0;
+  const frequencyScale = volumeScales[userProfile.trainingDays] || 1.0;
+  const experienceScales = { beginner: 0.7, intermediate: 1.0, advanced: 1.2 };
+  const experienceScale = experienceScales[userExperience] || 1.0;
+  const volumeScale = frequencyScale * experienceScale;
   const rating = yesterdaySession?.rating ?? 3;
   const isFirstSession = !yesterdaySession;
 
@@ -922,7 +1052,10 @@ function buildTodaySession({ userProfile, yesterdaySession, sessionHistory, exer
         actual_duration_achieved: null, actual_distance_achieved: null,
       };
       if (adapted.rep_mode === "timed" || adapted.rep_mode === "interval") {
-        finalExercise.duration_seconds = adapted.duration_seconds;
+        const maxCardio = { beginner: 1200, intermediate: 2400, advanced: 3600 };
+        const cardioCap = exerciseLibrary[adapted.exercise.id]?.movement_pattern === "cardio"
+          ? (maxCardio[userExperience] || 1200) : Infinity;
+        finalExercise.duration_seconds = Math.min(adapted.duration_seconds, cardioCap);
       } else if (adapted.rep_mode === "distance") {
         finalExercise.reps_min = adapted.reps_min; finalExercise.reps_max = adapted.reps_max;
       } else {
@@ -1033,13 +1166,108 @@ function renderHeader(streak, week) {
           <button class="btn-icon" onclick="exportData()">📤 Export</button>
           <button class="btn-icon" onclick="document.getElementById('importFile').click()">📥 Import</button>
           <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+          <button class="btn-icon" onclick="renderHistory()">📊 History</button>
           <button class="btn-icon danger" onclick="resetAllData()">🗑️ Reset</button>
         </div>
       </div>
     </div>
   `;
 }
+function renderHistory() {
+  const appData = getAppData();
+  const history = appData.history || [];
+  const profile = appData.userProfile;
+  const app = document.getElementById('app');
 
+  const totalSessions = history.filter(s => !s.wasRestDay).length;
+  const totalRestDays = history.filter(s => s.wasRestDay).length;
+  const ratingLabels = { 1:'TRIVIAL', 2:'MANAGEABLE', 3:'OPTIMAL', 4:'DEMANDING', 5:'LIMIT REACHED' };
+  const ratingClasses = { 1:'rating-trivial', 2:'rating-manageable', 3:'rating-optimal', 4:'rating-demanding', 5:'rating-limit' };
+
+  // Pattern frequency
+  const patternCounts = {};
+  history.filter(s => !s.wasRestDay).forEach(s => {
+    (s.patterns_used || []).forEach(p => { patternCounts[p] = (patternCounts[p] || 0) + 1; });
+  });
+
+  // Recent 20 sessions
+  const recent = [...history].reverse().slice(0, 20);
+
+  const patternRows = Object.entries(patternCounts)
+    .sort((a,b) => b[1]-a[1])
+    .map(([p,c]) => `
+      <div class="pattern-row">
+        <span class="pattern-name">${p}</span>
+        <span class="pattern-count">${c}×</span>
+      </div>`).join('');
+
+  const historyRows = recent.map(s => {
+    if (s.wasRestDay) return `
+      <div class="history-entry">
+        <div class="history-entry-header">
+          <span class="history-entry-date">${s.date || '—'}</span>
+          <span class="history-entry-rating rating-rest">REST DAY</span>
+        </div>
+      </div>`;
+    const rating = s.rating;
+    const ratingLabel = rating ? ratingLabels[rating] : '—';
+    const ratingClass = rating ? ratingClasses[rating] : 'rating-rest';
+    const exList = (s.exercises || []).map(e => {
+      let metric = '';
+      if (e.rep_mode === 'timed' || e.rep_mode === 'interval') {
+        metric = e.duration_seconds ? `${Math.round(e.duration_seconds/60)}min` : '';
+      } else {
+        metric = (e.reps_min && e.reps_max) ? `${e.reps_min}–${e.reps_max} reps` : '';
+      }
+      return `<li>▸ ${e.name}<span>${e.sets ? e.sets+'×' : ''} ${metric}</span></li>`;
+    }).join('');
+    return `
+      <div class="history-entry">
+        <div class="history-entry-header">
+          <span class="history-entry-date">${s.date || '—'} · WEEK ${s.week_number || '?'}</span>
+          <span class="history-entry-rating ${ratingClass}">${ratingLabel}</span>
+        </div>
+        <ul class="history-exercise-list">${exList}</ul>
+      </div>`;
+  }).join('');
+
+  app.innerHTML = `
+    ${renderHeader(appData.streak, appData.week)}
+    <div class="history-nav">
+      <button onclick="window.onload()">◀ BACK TO TRIAL</button>
+    </div>
+    <div class="card">
+      <div class="card-title">HUNTER STATUS</div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-value">${appData.streak}</div>
+          <div class="stat-label">Day Streak</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${appData.week}</div>
+          <div class="stat-label">Current Week</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${totalSessions}</div>
+          <div class="stat-label">Trials Complete</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${profile ? profile.class.toUpperCase().slice(0,3) : '—'}</div>
+          <div class="stat-label">Class</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">PATTERN FREQUENCY</div>
+      ${patternRows || '<p style="color:var(--text-muted);font-size:0.85rem;">No sessions recorded yet.</p>'}
+    </div>
+    <div class="card">
+      <div class="card-title">TRIAL LOG <span class="badge">LAST 20</span></div>
+      ${historyRows || '<p style="color:var(--text-muted);font-size:0.85rem;">No sessions recorded yet.</p>'}
+    </div>
+    <a href="YOUR_GOOGLE_FORM_LINK" target="_blank" style="display:block;text-align:center;padding:16px;font-size:0.75rem;color:#45a29e;opacity:0.6;text-decoration:none;font-family:monospace;letter-spacing:2px;">[ SUBMIT FEEDBACK TO THE SYSTEM ]</a>
+  `;
+}
 function renderSetup() {
   const app = document.getElementById('app');
   app.innerHTML = `
